@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy — Beauty Vision</title>
+  <style>
+    :root {
+      --ink: #2c2420;
+      --ink-mid: #6b5e56;
+      --cognac: #9a6b4b;
+      --bg: #f6f2ed;
+      --white: #ffffff;
+      --line: #e8e2d8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 0;
+    }
+    .wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+    .lang-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .lang-btn {
+      padding: 8px 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink-mid);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-btn.active {
+      background: var(--cognac);
+      color: var(--white);
+      border-color: var(--cognac);
+    }
+    .brand {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--cognac);
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .effective {
+      font-size: 13px;
+      color: var(--ink-mid);
+      margin-bottom: 36px;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 28px 0 10px;
+      letter-spacing: 0.3px;
+    }
+    h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 18px 0 8px;
+    }
+    p, li {
+      font-size: 14px;
+      color: var(--ink-mid);
+      margin-bottom: 10px;
+    }
+    ul, ol {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+    li { margin-bottom: 6px; }
+    a { color: var(--cognac); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      color: var(--ink-mid);
+    }
+    th {
+      font-weight: 600;
+      color: var(--ink);
+      background: var(--white);
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="switchLang('en')">English</button>
+      <button class="lang-btn" onclick="switchLang('ka')">ქართული</button>
+    </div>
+
+    <!-- ══════════════════ ENGLISH ══════════════════ -->
+    <div id="en" class="section active">
+      <div class="brand">Beauty Vision</div>
+      <h1>Privacy Policy</h1>
+      <p class="effective">Effective date: March 12, 2026</p>
+
+      <h2>1. Data Controller</h2>
+      <p>Beauty Vision LLC ("Company", "we", "us"), registered under the laws of Georgia, is the data controller responsible for your personal data collected through the Beauty Vision mobile application ("App").</p>
+      <p>Contact: sh.chachanidze@beautyvision.ge</p>
+
+      <h2>2. Personal Data We Collect</h2>
+      <table>
+        <tr><th>Category</th><th>Data</th><th>Required?</th></tr>
+        <tr><td>Identity</td><td>First name, last name</td><td>Yes</td></tr>
+        <tr><td>Contact</td><td>Phone number</td><td>Yes</td></tr>
+        <tr><td>Contact</td><td>Email address</td><td>Optional for Georgian phone registrations; required otherwise</td></tr>
+        <tr><td>Account security</td><td>Password (stored as bcrypt hash)</td><td>Yes</td></tr>
+        <tr><td>Date of birth</td><td>Birthday</td><td>Optional</td></tr>
+        <tr><td>Loyalty</td><td>Bonus points balance, purchase history at physical stores</td><td>Auto-generated</td></tr>
+        <tr><td>Device &amp; usage</td><td>Device type, OS version, app version, crash logs</td><td>Automatic</td></tr>
+      </table>
+
+      <h2>3. How We Use Your Data</h2>
+      <ul>
+        <li><strong>Account management</strong> — to create and maintain your account, verify your identity via email or SMS</li>
+        <li><strong>Loyalty program</strong> — to calculate and credit bonus points and track tier status</li>
+        <li><strong>Customer support</strong> — to respond to your inquiries</li>
+        <li><strong>Marketing</strong> — to send promotional emails (only if you opt in during registration)</li>
+        <li><strong>App improvement</strong> — to analyze usage patterns and fix bugs</li>
+      </ul>
+
+      <h2>4. Legal Basis for Processing</h2>
+      <p>We process your personal data under the following legal bases as defined by the General Data Protection Regulation (GDPR) and the Law of Georgia on Personal Data Protection:</p>
+      <ul>
+        <li><strong>Contract performance</strong> (GDPR Art. 6(1)(b)) — processing necessary to fulfill your orders and manage your account</li>
+        <li><strong>Consent</strong> (GDPR Art. 6(1)(a)) — for marketing communications and optional birthday data; you may withdraw consent at any time</li>
+        <li><strong>Legitimate interests</strong> (GDPR Art. 6(1)(f)) — for fraud prevention, app security, and service improvement</li>
+        <li><strong>Legal obligation</strong> (GDPR Art. 6(1)(c)) — when required by Georgian tax or commercial law</li>
+      </ul>
+
+      <h2>5. Data Sharing</h2>
+      <p>We share your personal data only with the following third parties, strictly for the purposes described:</p>
+      <ul>
+        <li><strong>SMS provider</strong> — delivery of verification codes to Georgian phone numbers (receives phone number and code only)</li>
+        <li><strong>Email service provider</strong> — delivery of verification emails and marketing emails (if opted in)</li>
+        <li><strong>Hosting provider</strong> — servers where the App's backend runs (data encrypted at rest and in transit)</li>
+      </ul>
+      <p>We do <strong>not</strong> sell your personal data to any third party. We do not transfer data outside of Georgia and the European Economic Area without appropriate safeguards.</p>
+
+      <h2>6. Data Retention</h2>
+      <ul>
+        <li><strong>Active accounts</strong> — data retained while your account is active</li>
+        <li><strong>Deleted accounts</strong> — personal data is deleted within 30 days of account deletion; anonymized transaction records may be retained for accounting/tax purposes for up to 6 years as required by Georgian law</li>
+        <li><strong>Verification codes</strong> — automatically expire and are deleted after 10 minutes</li>
+        <li><strong>Marketing consent records</strong> — retained for the duration of your account plus 1 year after deletion for legal compliance</li>
+      </ul>
+
+      <h2>7. Your Rights</h2>
+      <p>Under GDPR and Georgian data protection law, you have the right to:</p>
+      <ul>
+        <li><strong>Access</strong> — request a copy of the personal data we hold about you</li>
+        <li><strong>Rectification</strong> — correct inaccurate personal data (you can do this directly in the App under Personal Information)</li>
+        <li><strong>Erasure</strong> — request deletion of your account and personal data (available in App settings)</li>
+        <li><strong>Restriction</strong> — request that we limit how we process your data</li>
+        <li><strong>Data portability</strong> — receive your data in a structured, machine-readable format</li>
+        <li><strong>Objection</strong> — object to processing based on legitimate interests</li>
+        <li><strong>Withdraw consent</strong> — withdraw marketing consent at any time without affecting prior processing</li>
+      </ul>
+      <p>To exercise any of these rights, contact us at sh.chachanidze@beautyvision.ge. We will respond within 30 days.</p>
+
+      <h2>8. Data Security</h2>
+      <p>We implement appropriate technical and organizational measures to protect your personal data, including:</p>
+      <ul>
+        <li>Passwords stored using bcrypt hashing (never in plain text)</li>
+        <li>HTTPS encryption for all data in transit</li>
+        <li>Access controls limiting data access to authorized personnel only</li>
+      </ul>
+
+      <h2>9. Children's Privacy</h2>
+      <p>The App is not intended for children under 16 years of age. We do not knowingly collect personal data from children under 16. If we discover that we have collected data from a child under 16, we will delete it promptly.</p>
+
+      <h2>10. Changes to This Policy</h2>
+      <p>We may update this Privacy Policy from time to time. We will notify you of material changes through the App or via email. The "Effective date" at the top of this document indicates when it was last revised.</p>
+
+      <h2>11. Contact &amp; Complaints</h2>
+      <p>For any privacy-related questions, requests, or complaints:</p>
+      <p>Beauty Vision LLC<br>Email: sh.chachanidze@beautyvision.ge</p>
+      <p>If you believe your data protection rights have been violated, you also have the right to lodge a complaint with the Personal Data Protection Service of Georgia (https://personaldata.ge).</p>
+    </div>
+
+    <!-- ══════════════════ GEORGIAN ══════════════════ -->
+    <div id="ka" class="section">
+      <div class="brand">Beauty Vision</div>
+      <h1>კონფიდენციალობის პოლიტიკა</h1>
+      <p class="effective">ძალაში შესვლის თარიღი: 2026 წლის 12 მარტი</p>
+
+      <h2>1. მონაცემთა კონტროლერი</h2>
+      <p>Beauty Vision LLC ("კომპანია", "ჩვენ"), საქართველოს კანონმდებლობით რეგისტრირებული, არის მონაცემთა კონტროლერი, რომელიც პასუხისმგებელია Beauty Vision მობილური აპლიკაციის ("აპლიკაცია") მეშვეობით შეგროვებულ თქვენს პერსონალურ მონაცემებზე.</p>
+      <p>კონტაქტი: sh.chachanidze@beautyvision.ge</p>
+
+      <h2>2. პერსონალური მონაცემები, რომლებსაც ვაგროვებთ</h2>
+      <table>
+        <tr><th>კატეგორია</th><th>მონაცემები</th><th>სავალდებულო?</th></tr>
+        <tr><td>იდენტიფიკაცია</td><td>სახელი, გვარი</td><td>დიახ</td></tr>
+        <tr><td>კონტაქტი</td><td>ტელეფონის ნომერი</td><td>დიახ</td></tr>
+        <tr><td>კონტაქტი</td><td>ელ-ფოსტა</td><td>სურვილისამებრ ქართული ნომრებისთვის; სავალდებულო სხვა შემთხვევაში</td></tr>
+        <tr><td>ანგარიშის უსაფრთხოება</td><td>პაროლი (ინახება bcrypt ჰეშით)</td><td>დიახ</td></tr>
+        <tr><td>დაბადების თარიღი</td><td>დაბადების დღე</td><td>სურვილისამებრ</td></tr>
+        <tr><td>ლოიალობა</td><td>ბონუს ქულები, ფიზიკურ მაღაზიებში შესყიდვების ისტორია</td><td>ავტომატურად</td></tr>
+        <tr><td>მოწყობილობა და გამოყენება</td><td>მოწყობილობის ტიპი, OS ვერსია, აპლიკაციის ვერსია, შეცდომის ლოგები</td><td>ავტომატურად</td></tr>
+      </table>
+
+      <h2>3. როგორ ვიყენებთ თქვენს მონაცემებს</h2>
+      <ul>
+        <li><strong>ანგარიშის მართვა</strong> — ანგარიშის შექმნა და შენარჩუნება, იდენტობის დადასტურება ელ-ფოსტით ან SMS-ით</li>
+        <li><strong>ლოიალობის პროგრამა</strong> — ბონუს ქულების გამოთვლა და დარიცხვა, საფეხურის სტატუსის თვალყურის დევნება</li>
+        <li><strong>მომხმარებლის მხარდაჭერა</strong> — თქვენი მოთხოვნების საპასუხოდ</li>
+        <li><strong>მარკეტინგი</strong> — სარეკლამო ელ-ფოსტის გაგზავნა (მხოლოდ თქვენი თანხმობის შემთხვევაში)</li>
+        <li><strong>აპლიკაციის გაუმჯობესება</strong> — გამოყენების შაბლონების ანალიზი და ხარვეზების გამოსწორება</li>
+      </ul>
+
+      <h2>4. დამუშავების სამართლებრივი საფუძველი</h2>
+      <p>ჩვენ ვამუშავებთ თქვენს პერსონალურ მონაცემებს შემდეგი სამართლებრივი საფუძვლებით, როგორც განსაზღვრულია პერსონალურ მონაცემთა დაცვის ზოგადი რეგულაციით (GDPR) და საქართველოს კანონით პერსონალურ მონაცემთა დაცვის შესახებ:</p>
+      <ul>
+        <li><strong>ხელშეკრულების შესრულება</strong> (GDPR მუხ. 6(1)(ბ)) — შეკვეთების შესრულებისა და ანგარიშის მართვისთვის აუცილებელი დამუშავება</li>
+        <li><strong>თანხმობა</strong> (GDPR მუხ. 6(1)(ა)) — მარკეტინგული კომუნიკაციებისთვის და დაბადების თარიღისთვის; შეგიძლიათ ნებისმიერ დროს გააუქმოთ თანხმობა</li>
+        <li><strong>ლეგიტიმური ინტერესები</strong> (GDPR მუხ. 6(1)(ვ)) — თაღლითობის პრევენცია, აპლიკაციის უსაფრთხოება და სერვისის გაუმჯობესება</li>
+        <li><strong>სამართლებრივი ვალდებულება</strong> (GDPR მუხ. 6(1)(გ)) — საქართველოს საგადასახადო ან კომერციული კანონმდებლობის მოთხოვნისას</li>
+      </ul>
+
+      <h2>5. მონაცემთა გაზიარება</h2>
+      <p>ჩვენ ვაზიარებთ თქვენს პერსონალურ მონაცემებს მხოლოდ შემდეგ მესამე მხარეებთან, მკაცრად აღწერილი მიზნებისთვის:</p>
+      <ul>
+        <li><strong>SMS პროვაიდერი</strong> — ვერიფიკაციის კოდების მიწოდება ქართულ ტელეფონის ნომრებზე (იღებს მხოლოდ ტელეფონის ნომერს და კოდს)</li>
+        <li><strong>ელ-ფოსტის მომსახურების პროვაიდერი</strong> — ვერიფიკაციისა და მარკეტინგული ელ-ფოსტის მიწოდება (თანხმობის შემთხვევაში)</li>
+        <li><strong>ჰოსტინგის პროვაიდერი</strong> — სერვერები, სადაც აპლიკაციის ბექენდი მუშაობს (მონაცემები დაშიფრულია)</li>
+      </ul>
+      <p>ჩვენ <strong>არ</strong> ვყიდით თქვენს პერსონალურ მონაცემებს არცერთ მესამე მხარეს. ჩვენ არ გადავცემთ მონაცემებს საქართველოსა და ევროპის ეკონომიკური ზონის გარეთ შესაბამისი გარანტიების გარეშე.</p>
+
+      <h2>6. მონაცემთა შენახვა</h2>
+      <ul>
+        <li><strong>აქტიური ანგარიშები</strong> — მონაცემები ინახება ანგარიშის აქტიურობის განმავლობაში</li>
+        <li><strong>წაშლილი ანგარიშები</strong> — პერსონალური მონაცემები იშლება ანგარიშის წაშლიდან 30 დღის განმავლობაში; ანონიმიზებული ტრანზაქციის ჩანაწერები შეიძლება შენარჩუნდეს საგადასახადო მიზნებისთვის 6 წლამდე, საქართველოს კანონმდებლობის შესაბამისად</li>
+        <li><strong>ვერიფიკაციის კოდები</strong> — ავტომატურად იწურება და იშლება 10 წუთის შემდეგ</li>
+        <li><strong>მარკეტინგული თანხმობის ჩანაწერები</strong> — ინახება ანგარიშის ხანგრძლივობით, პლუს 1 წელი წაშლის შემდეგ სამართლებრივი შესაბამისობისთვის</li>
+      </ul>
+
+      <h2>7. თქვენი უფლებები</h2>
+      <p>GDPR-ისა და საქართველოს მონაცემთა დაცვის კანონის თანახმად, თქვენ გაქვთ უფლება:</p>
+      <ul>
+        <li><strong>წვდომა</strong> — მოითხოვოთ თქვენს შესახებ შენახული პერსონალური მონაცემების ასლი</li>
+        <li><strong>შესწორება</strong> — გაასწოროთ არაზუსტი პერსონალური მონაცემები (შეგიძლიათ პირდაპირ აპლიკაციაში, პირადი ინფორმაციის განყოფილებაში)</li>
+        <li><strong>წაშლა</strong> — მოითხოვოთ ანგარიშის და პერსონალური მონაცემების წაშლა (ხელმისაწვდომია აპლიკაციის პარამეტრებში)</li>
+        <li><strong>შეზღუდვა</strong> — მოითხოვოთ მონაცემთა დამუშავების შეზღუდვა</li>
+        <li><strong>მონაცემთა პორტაბელურობა</strong> — მიიღოთ თქვენი მონაცემები სტრუქტურირებულ, მანქანით წაკითხვად ფორმატში</li>
+        <li><strong>პროტესტი</strong> — გააპროტესტოთ ლეგიტიმურ ინტერესებზე დაფუძნებული დამუშავება</li>
+        <li><strong>თანხმობის გაუქმება</strong> — ნებისმიერ დროს გააუქმოთ მარკეტინგული თანხმობა წინა დამუშავებაზე გავლენის გარეშე</li>
+      </ul>
+      <p>ამ უფლებების განსახორციელებლად დაგვიკავშირდით: sh.chachanidze@beautyvision.ge. პასუხს გასცემთ 30 დღის განმავლობაში.</p>
+
+      <h2>8. მონაცემთა უსაფრთხოება</h2>
+      <p>ჩვენ ვიყენებთ შესაბამის ტექნიკურ და ორგანიზაციულ ზომებს თქვენი პერსონალური მონაცემების დასაცავად, მათ შორის:</p>
+      <ul>
+        <li>პაროლები ინახება bcrypt ჰეშირებით (არასოდეს ტექსტის სახით)</li>
+        <li>HTTPS დაშიფვრა ყველა მონაცემისთვის ტრანზიტში</li>
+        <li>წვდომის კონტროლი, რომელიც ზღუდავს მონაცემებზე წვდომას მხოლოდ ავტორიზებული პერსონალისთვის</li>
+      </ul>
+
+      <h2>9. ბავშვთა კონფიდენციალობა</h2>
+      <p>აპლიკაცია არ არის გათვლილი 16 წლამდე ასაკის ბავშვებისთვის. ჩვენ შეგნებულად არ ვაგროვებთ 16 წლამდე ასაკის ბავშვების პერსონალურ მონაცემებს. თუ აღმოვაჩენთ, რომ შევაგროვეთ 16 წლამდე ასაკის ბავშვის მონაცემები, დაუყოვნებლივ წავშლით მათ.</p>
+
+      <h2>10. პოლიტიკის ცვლილება</h2>
+      <p>ჩვენ შეიძლება განვაახლოთ ეს კონფიდენციალობის პოლიტიკა დროდადრო. არსებითი ცვლილებების შესახებ გაცნობებთ აპლიკაციის მეშვეობით ან ელ-ფოსტით. "ძალაში შესვლის თარიღი" დოკუმენტის ზემოთ მიუთითებს ბოლო განახლების თარიღს.</p>
+
+      <h2>11. კონტაქტი და საჩივრები</h2>
+      <p>კონფიდენციალობასთან დაკავშირებული კითხვებისთვის, მოთხოვნებისთვის ან საჩივრებისთვის:</p>
+      <p>Beauty Vision LLC<br>ელ-ფოსტა: sh.chachanidze@beautyvision.ge</p>
+      <p>თუ მიგაჩნიათ, რომ თქვენი მონაცემთა დაცვის უფლებები დაირღვა, ასევე გაქვთ უფლება შეიტანოთ საჩივარი საქართველოს პერსონალურ მონაცემთა დაცვის სამსახურში (https://personaldata.ge).</p>
+    </div>
+  </div>
+
+  <script>
+    function switchLang(lang) {
+      document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+      document.getElementById(lang).classList.add('active');
+      document.querySelectorAll('.lang-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelector('[onclick="switchLang(\'' + lang + '\')"]').classList.add('active');
+    }
+  </script>
+</body>
+</html>
