@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — Beauty Vision</title>
+  <style>
+    :root {
+      --ink: #2c2420;
+      --ink-mid: #6b5e56;
+      --cognac: #9a6b4b;
+      --bg: #f6f2ed;
+      --white: #ffffff;
+      --line: #e8e2d8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 0;
+    }
+    .wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .nav-links a {
+      color: var(--ink-mid);
+      text-decoration: none;
+      padding-bottom: 2px;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover { border-bottom-color: var(--cognac); color: var(--ink); }
+    .nav-links a.active { color: var(--cognac); border-bottom-color: var(--cognac); }
+    .lang-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .lang-btn {
+      padding: 8px 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink-mid);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-btn.active {
+      background: var(--cognac);
+      color: var(--white);
+      border-color: var(--cognac);
+    }
+    .brand {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--cognac);
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: var(--ink-mid);
+      margin-bottom: 36px;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--ink);
+      margin: 28px 0 10px;
+      letter-spacing: 0.3px;
+    }
+    p, li {
+      font-size: 14px;
+      color: var(--ink-mid);
+      margin-bottom: 10px;
+    }
+    ul {
+      padding-left: 20px;
+      margin-bottom: 10px;
+    }
+    li { margin-bottom: 6px; }
+    a { color: var(--cognac); }
+    .contact-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 20px 0 32px;
+    }
+    .contact-card p { margin-bottom: 6px; }
+    .contact-card .label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--cognac);
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="nav-links">
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-service">Terms of Service</a>
+      <a href="/support" class="active">Support</a>
+    </div>
+
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="switchLang('en')">English</button>
+      <button class="lang-btn" onclick="switchLang('ka')">ქართული</button>
+    </div>
+
+    <!-- ══════════════════ ENGLISH ══════════════════ -->
+    <div id="en" class="section active">
+      <div class="brand">Beauty Vision</div>
+      <h1>Support</h1>
+      <p class="subtitle">We're here to help. Find answers below or contact us directly.</p>
+
+      <div class="contact-card">
+        <p class="label">Contact Us</p>
+        <p><strong>Email:</strong> <a href="mailto:sh.chachanidze@beautyvision.ge">sh.chachanidze@beautyvision.ge</a></p>
+        <p>We typically respond within 24 hours on business days.</p>
+      </div>
+
+      <h2>Account &amp; Registration</h2>
+      <ul>
+        <li><strong>How do I create an account?</strong> — Download the Beauty Vision app, tap "Register", and follow the steps. You'll need your name, phone number, and a password.</li>
+        <li><strong>I didn't receive a verification code.</strong> — Check your spam/junk folder (for email) or wait a moment and tap "Resend". Make sure you entered the correct phone number or email.</li>
+        <li><strong>How do I reset my password?</strong> — On the login screen, tap "Forgot Password" and follow the instructions sent to your email or phone.</li>
+        <li><strong>How do I delete my account?</strong> — Go to Settings in the app and select "Delete Account". Your personal data will be removed within 30 days.</li>
+      </ul>
+
+      <h2>Loyalty &amp; Bonus Points</h2>
+      <ul>
+        <li><strong>How do I earn bonus points?</strong> — Show your in-app QR code at any Beauty Vision physical store when making a purchase. Points are credited automatically based on the purchase amount.</li>
+        <li><strong>What are the earning rates?</strong> — 2% (₾100–300), 3% (₾300–700), 4% (₾700–1,000), 5% (₾1,000+) on physical store purchases.</li>
+        <li><strong>Where can I see my points balance?</strong> — Open the app and go to the Wallet tab to view your current balance and transaction history.</li>
+      </ul>
+
+      <h2>Orders &amp; Payments</h2>
+      <ul>
+        <li><strong>What payment methods are accepted?</strong> — We accept card payments through Keepz.</li>
+        <li><strong>Where can I view my order history?</strong> — Go to your profile in the app to see all past orders and their statuses.</li>
+      </ul>
+
+      <h2>Privacy &amp; Data</h2>
+      <ul>
+        <li><strong>How is my data protected?</strong> — We use encryption, secure password hashing, and strict access controls. See our <a href="/privacy-policy">Privacy Policy</a> for full details.</li>
+        <li><strong>How do I exercise my data rights?</strong> — Contact us at <a href="mailto:sh.chachanidze@beautyvision.ge">sh.chachanidze@beautyvision.ge</a> to request access, correction, or deletion of your personal data.</li>
+      </ul>
+    </div>
+
+    <!-- ══════════════════ GEORGIAN ══════════════════ -->
+    <div id="ka" class="section">
+      <div class="brand">Beauty Vision</div>
+      <h1>მხარდაჭერა</h1>
+      <p class="subtitle">ჩვენ აქ ვართ დასახმარებლად. იპოვეთ პასუხები ქვემოთ ან დაგვიკავშირდით პირდაპირ.</p>
+
+      <div class="contact-card">
+        <p class="label">დაგვიკავშირდით</p>
+        <p><strong>ელ-ფოსტა:</strong> <a href="mailto:sh.chachanidze@beautyvision.ge">sh.chachanidze@beautyvision.ge</a></p>
+        <p>ჩვეულებრივ ვპასუხობთ 24 საათის განმავლობაში სამუშაო დღეებში.</p>
+      </div>
+
+      <h2>ანგარიში და რეგისტრაცია</h2>
+      <ul>
+        <li><strong>როგორ შევქმნა ანგარიში?</strong> — ჩამოტვირთეთ Beauty Vision აპლიკაცია, დააჭირეთ „რეგისტრაცია" და მიჰყევით ნაბიჯებს. დაგჭირდებათ სახელი, ტელეფონის ნომერი და პაროლი.</li>
+        <li><strong>ვერიფიკაციის კოდი არ მივიღე.</strong> — შეამოწმეთ სპამის საქაღალდე (ელ-ფოსტისთვის) ან დაელოდეთ და დააჭირეთ „ხელახლა გაგზავნა". დარწმუნდით, რომ სწორი ტელეფონის ნომერი ან ელ-ფოსტა შეიყვანეთ.</li>
+        <li><strong>როგორ აღვადგინო პაროლი?</strong> — შესვლის ეკრანზე დააჭირეთ „დამავიწყდა პაროლი" და მიჰყევით ელ-ფოსტაზე ან ტელეფონზე გამოგზავნილ ინსტრუქციებს.</li>
+        <li><strong>როგორ წავშალო ანგარიში?</strong> — გადადით აპლიკაციის პარამეტრებში და აირჩიეთ „ანგარიშის წაშლა". თქვენი პერსონალური მონაცემები წაიშლება 30 დღის განმავლობაში.</li>
+      </ul>
+
+      <h2>ლოიალობა და ბონუს ქულები</h2>
+      <ul>
+        <li><strong>როგორ დავაგროვო ბონუს ქულები?</strong> — აჩვენეთ თქვენი აპლიკაციის QR კოდი Beauty Vision-ის ნებისმიერ ფიზიკურ მაღაზიაში შესყიდვისას. ქულები ავტომატურად დაირიცხება შესყიდვის თანხის მიხედვით.</li>
+        <li><strong>რა არის დარიცხვის განაკვეთები?</strong> — 2% (₾100–300), 3% (₾300–700), 4% (₾700–1,000), 5% (₾1,000+) ფიზიკურ მაღაზიაში შესყიდვებზე.</li>
+        <li><strong>სად ვნახო ქულების ბალანსი?</strong> — გახსენით აპლიკაცია და გადადით საფულის ჩანართზე მიმდინარე ბალანსისა და ტრანზაქციების ისტორიის სანახავად.</li>
+      </ul>
+
+      <h2>შეკვეთები და გადახდები</h2>
+      <ul>
+        <li><strong>რა გადახდის მეთოდები მიიღება?</strong> — ჩვენ ვიღებთ ბარათით გადახდებს Keepz-ის მეშვეობით.</li>
+        <li><strong>სად ვნახო შეკვეთების ისტორია?</strong> — გადადით თქვენს პროფილზე აპლიკაციაში ყველა წინა შეკვეთისა და მათი სტატუსების სანახავად.</li>
+      </ul>
+
+      <h2>კონფიდენციალობა და მონაცემები</h2>
+      <ul>
+        <li><strong>როგორ არის დაცული ჩემი მონაცემები?</strong> — ჩვენ ვიყენებთ დაშიფვრას, უსაფრთხო პაროლების ჰეშირებას და მკაცრ წვდომის კონტროლს. სრული დეტალებისთვის იხილეთ ჩვენი <a href="/privacy-policy">კონფიდენციალობის პოლიტიკა</a>.</li>
+        <li><strong>როგორ განვახორციელო მონაცემთა უფლებები?</strong> — დაგვიკავშირდით <a href="mailto:sh.chachanidze@beautyvision.ge">sh.chachanidze@beautyvision.ge</a> მისამართზე თქვენი პერსონალური მონაცემების წვდომის, შესწორების ან წაშლის მოსათხოვნად.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    function switchLang(lang) {
+      document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+      document.getElementById(lang).classList.add('active');
+      document.querySelectorAll('.lang-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelector('[onclick="switchLang(\'' + lang + '\')"]').classList.add('active');
+    }
+  </script>
+</body>
+</html>
