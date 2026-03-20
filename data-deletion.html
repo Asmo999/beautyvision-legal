@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data deletion — Beauty Vision</title>
+  <style>
+    :root {
+      --ink: #2c2420;
+      --ink-mid: #6b5e56;
+      --cognac: #9a6b4b;
+      --bg: #f6f2ed;
+      --white: #ffffff;
+      --line: #e8e2d8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      line-height: 1.7;
+      padding: 0;
+    }
+    .wrapper {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+    .nav-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+    }
+    .nav-links a {
+      color: var(--ink-mid);
+      text-decoration: none;
+      padding-bottom: 2px;
+      border-bottom: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover { border-bottom-color: var(--cognac); color: var(--ink); }
+    .nav-links a.active { color: var(--cognac); border-bottom-color: var(--cognac); }
+    .lang-toggle {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .lang-btn {
+      padding: 8px 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--ink-mid);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .lang-btn.active {
+      background: var(--cognac);
+      color: var(--white);
+      border-color: var(--cognac);
+    }
+    .brand {
+      font-size: 11px;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      color: var(--cognac);
+      margin-bottom: 8px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--ink);
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: var(--ink-mid);
+      margin-bottom: 28px;
+    }
+    p {
+      font-size: 14px;
+      color: var(--ink-mid);
+      margin-bottom: 12px;
+    }
+    a { color: var(--cognac); }
+    .contact-card {
+      background: var(--white);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 24px;
+      margin: 8px 0 0;
+    }
+    .section { display: none; }
+    .section.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="nav-links">
+      <a href="/privacy-policy">Privacy Policy</a>
+      <a href="/terms-of-service">Terms of Service</a>
+      <a href="/support">Support</a>
+      <a href="/data-deletion" class="active">Data deletion</a>
+    </div>
+
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="switchLang('en')">English</button>
+      <button class="lang-btn" onclick="switchLang('ka')">ქართული</button>
+    </div>
+
+    <div id="en" class="section active">
+      <div class="brand">Beauty Vision</div>
+      <h1>Data deletion</h1>
+      <p class="subtitle">How to request removal of your personal data.</p>
+
+      <div class="contact-card">
+        <p>To request deletion of your personal data, contact us at <a href="mailto:sh.chachanidze@beautyvision.ge">sh.chachanidze@beautyvision.ge</a>. We will delete your data within 30 days of verifying your request.</p>
+        <p>You can also delete your account from the app under Settings → Delete account.</p>
+      </div>
+    </div>
+
+    <div id="ka" class="section">
+      <div class="brand">Beauty Vision</div>
+      <h1>მონაცემების წაშლა</h1>
+      <p class="subtitle">როგორ მოითხოვოთ თქვენი პერსონალური მონაცემების წაშლა.</p>
+
+      <div class="contact-card">
+        <p>პერსონალური მონაცემების წაშლის მოსათხოვნად დაგვიკავშირდით მისამართზე <a href="mailto:sh.chachanidze@beautyvision.ge">sh.chachanidze@beautyvision.ge</a>. თქვენი მონაცემები წაიშლება თქვენი მოთხოვნის დადასტურებიდან 30 დღის განმავლობაში.</p>
+        <p>ასევე შეგიძლიათ წაშალოთ ანგარიში აპლიკაციიდან: პარამეტრები → ანგარიშის წაშლა.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchLang(lang) {
+      document.querySelectorAll('.section').forEach(function(s) { s.classList.remove('active'); });
+      document.getElementById(lang).classList.add('active');
+      document.querySelectorAll('.lang-btn').forEach(function(b) { b.classList.remove('active'); });
+      document.querySelector('[onclick="switchLang(\'' + lang + '\')"]').classList.add('active');
+    }
+  </script>
+</body>
+</html>
