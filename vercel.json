@@ -1,6 +1,6 @@
 {
   "cleanUrls": true,
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/", "destination": "/privacy-policy.html" },

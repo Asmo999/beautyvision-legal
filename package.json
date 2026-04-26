@@ -5,6 +5,7 @@
   "description": "Hosted legal pages for Beauty Vision (Privacy Policy)",
   "scripts": {
     "build": "npm --prefix Admin_Beauty_Vision run build",
+    "build:vercel": "npm --prefix Admin_Beauty_Vision install --include=dev --no-audit --no-fund && npm --prefix Admin_Beauty_Vision run build",
     "setup": "npm --prefix Admin_Beauty_Vision install --no-audit --no-fund",
     "dev": "npm run build && node server.mjs",
     "start": "node server.mjs"
