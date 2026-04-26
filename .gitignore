@@ -1,4 +1,5 @@
 /node_modules
+/admin
 /Admin_Beauty_Vision/node_modules
 /Admin_Beauty_Vision/dist
 .DS_Store
