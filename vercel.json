@@ -1,7 +1,14 @@
 {
   "cleanUrls": true,
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
   "rewrites": [
-    { "source": "/", "destination": "/privacy-policy.html" }
+    { "source": "/", "destination": "/privacy-policy.html" },
+    { "source": "/admin/assets/:path*", "destination": "/Admin_Beauty_Vision/dist/assets/:path*" },
+    { "source": "/admin/favicon.svg", "destination": "/Admin_Beauty_Vision/dist/favicon.svg" },
+    { "source": "/admin/icons.svg", "destination": "/Admin_Beauty_Vision/dist/icons.svg" },
+    { "source": "/admin", "destination": "/Admin_Beauty_Vision/dist/index.html" },
+    { "source": "/admin/(.*)", "destination": "/Admin_Beauty_Vision/dist/index.html" }
   ],
   "headers": [
     {
