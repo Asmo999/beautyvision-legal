@@ -1,11 +1,12 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Package, Tags, Bookmark, Users, ShoppingCart } from 'lucide-react';
+import { LayoutDashboard, Package, Tags, Bookmark, Users, ShoppingCart, Images } from 'lucide-react';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/products', label: 'Products', icon: Package },
   { to: '/categories', label: 'Categories', icon: Tags },
   { to: '/brands', label: 'Brands', icon: Bookmark },
+  { to: '/banners', label: 'Banners', icon: Images },
   { to: '/users', label: 'Users', icon: Users },
   { to: '/orders', label: 'Orders', icon: ShoppingCart },
 ];

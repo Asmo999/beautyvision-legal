@@ -36,6 +36,11 @@ export default function OrdersPage() {
     return `${o.user.firstName} ${o.user.lastName}`;
   };
 
+  const getDestination = (o: Order) => {
+    if (!o.shippingAddress) return '-';
+    return o.shippingAddress.address;
+  };
+
   return (
     <div>
       <h1 className="mb-4 text-2xl font-bold tracking-tight">Orders</h1>
@@ -43,7 +48,7 @@ export default function OrdersPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search by order number..." className="pl-8" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+          <Input placeholder="Search order, address, phone..." className="pl-8" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
         </div>
         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v === 'all' ? '' : v ?? ''); setPage(1); }}>
           <SelectTrigger className="w-40"><SelectValue placeholder="Status" /></SelectTrigger>
@@ -66,6 +71,7 @@ export default function OrdersPage() {
             <TableRow>
               <TableHead>Order #</TableHead>
               <TableHead>Customer</TableHead>
+              <TableHead>Address</TableHead>
               <TableHead>Items</TableHead>
               <TableHead>Total</TableHead>
               <TableHead>Status</TableHead>
@@ -74,13 +80,14 @@ export default function OrdersPage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
             ) : !data?.orders.length ? (
-              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No orders found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground">No orders found</TableCell></TableRow>
             ) : data.orders.map((o) => (
               <TableRow key={o._id} className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(`/orders/${o._id}`)}>
                 <TableCell className="font-mono text-sm font-medium">{o.orderNumber}</TableCell>
                 <TableCell>{getUserName(o)}</TableCell>
+                <TableCell className="max-w-[260px] truncate text-sm text-muted-foreground">{getDestination(o)}</TableCell>
                 <TableCell>{o.items.length} item(s)</TableCell>
                 <TableCell className="font-medium">{o.total} GEL</TableCell>
                 <TableCell><Badge variant={STATUS_VARIANT[o.status]}>{o.status}</Badge></TableCell>

@@ -71,6 +71,16 @@ export default function OrderDetailPage() {
               <>
                 <div className="flex justify-between"><span className="text-muted-foreground">Name</span><span>{customer.firstName} {customer.lastName}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Email</span><span>{customer.email}</span></div>
+                <div className="flex justify-between gap-4">
+                  <span className="text-muted-foreground">Phone</span>
+                  <span className="text-right">{customer.phone ?? '-'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Phone Status</span>
+                  <Badge variant={customer.phoneVerified ? 'default' : 'destructive'}>
+                    {customer.phoneVerified ? 'Verified' : 'Not verified'}
+                  </Badge>
+                </div>
                 <div className="flex justify-between"><span className="text-muted-foreground">QR</span><span className="font-mono">{customer.qrCode}</span></div>
               </>
             ) : (
@@ -96,12 +106,14 @@ export default function OrderDetailPage() {
 
       {order.shippingAddress && (
         <Card className="mt-4">
-          <CardHeader><CardTitle className="text-base">Shipping Address</CardTitle></CardHeader>
-          <CardContent className="text-sm">
-            <p>{order.shippingAddress.fullName}</p>
-            <p>{order.shippingAddress.address}</p>
-            <p>{order.shippingAddress.city}{order.shippingAddress.zip ? `, ${order.shippingAddress.zip}` : ''}</p>
-            <p>{order.shippingAddress.phone}</p>
+          <CardHeader><CardTitle className="text-base">Order Address</CardTitle></CardHeader>
+          <CardContent className="grid gap-2 text-sm sm:grid-cols-2">
+            <div className="flex justify-between gap-4"><span className="text-muted-foreground">Recipient</span><span className="text-right">{order.shippingAddress.fullName}</span></div>
+            <div className="flex justify-between gap-4"><span className="text-muted-foreground">Phone</span><span className="text-right">{order.shippingAddress.phone}</span></div>
+            <div className="flex justify-between gap-4 sm:col-span-2">
+              <span className="text-muted-foreground">Address</span>
+              <span className="text-right">{order.shippingAddress.address}</span>
+            </div>
           </CardContent>
         </Card>
       )}

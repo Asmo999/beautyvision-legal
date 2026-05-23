@@ -11,8 +11,26 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash2, Search, ImageOff } from 'lucide-react';
+import { mediaUrl } from '@/lib/urls';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+function formatMoney(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '');
+}
+
+function getDiscountPercent(price: number, oldPrice: number | null): number | null {
+  if (!oldPrice || oldPrice <= price || oldPrice <= 0) return null;
+  return Math.round(((oldPrice - price) / oldPrice) * 100);
+}
+
+function getPriceSummary(product: Product): { price: string; oldPrice: string | null; discount: number | null } {
+  const discount = getDiscountPercent(product.price, product.oldPrice);
+
+  return {
+    price: `${formatMoney(product.price)} GEL`,
+    oldPrice: discount !== null && product.oldPrice ? `${formatMoney(product.oldPrice)} GEL` : null,
+    discount,
+  };
+}
 
 export default function ProductsPage() {
   const navigate = useNavigate();
@@ -89,7 +107,7 @@ export default function ProductsPage() {
               <TableRow key={p._id} className={!p.isActive ? 'opacity-50' : ''}>
                 <TableCell>
                   {p.images?.[0] ? (
-                    <img src={`${API_BASE}${p.images[0]}`} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
+                    <img src={mediaUrl(p.images[0])} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
                   ) : (
                     <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
                       <ImageOff className="h-4 w-4 text-muted-foreground" />
@@ -99,7 +117,18 @@ export default function ProductsPage() {
                 <TableCell className="font-medium">{p.name}</TableCell>
                 <TableCell>{getBrandName(p)}</TableCell>
                 <TableCell>{getCatName(p)}</TableCell>
-                <TableCell>{p.price} GEL{p.oldPrice ? <span className="ml-1 text-xs text-muted-foreground line-through">{p.oldPrice}</span> : null}</TableCell>
+                <TableCell>
+                  {(() => {
+                    const summary = getPriceSummary(p);
+                    return (
+                      <div>
+                        <div>{summary.price}</div>
+                        {summary.oldPrice ? <div className="text-xs text-muted-foreground line-through">{summary.oldPrice}</div> : null}
+                        {summary.discount !== null ? <div className="text-xs text-destructive">-{summary.discount}%</div> : null}
+                      </div>
+                    );
+                  })()}
+                </TableCell>
                 <TableCell>{p.tag ? <Badge variant="outline">{p.tagLabel || p.tag}</Badge> : '-'}</TableCell>
                 <TableCell><Badge variant={p.inStock ? 'default' : 'destructive'}>{p.inStock ? 'In Stock' : 'Out'}</Badge></TableCell>
                 <TableCell>

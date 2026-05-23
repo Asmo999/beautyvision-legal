@@ -4,6 +4,7 @@ export interface AuthUser {
   firstName: string;
   lastName: string;
   phone: string | null;
+  phoneVerified: boolean;
   birthday: string | null;
   qrCode: string;
   role: 'customer' | 'admin' | 'superadmin';
@@ -15,11 +16,18 @@ export interface MeUser extends AuthUser {
   cashbackRate: number;
 }
 
+export type LanguageCode = 'en' | 'ka';
+
+export type TranslationBundle<Field extends string> = Partial<
+  Record<LanguageCode, Partial<Record<Field, string | null>>>
+>;
+
 export interface Category {
   _id: string;
   name: string;
   slug: string;
   description: string | null;
+  translations?: TranslationBundle<'name' | 'description'>;
   imageUrl: string | null;
   sortOrder: number;
   isActive: boolean;
@@ -32,6 +40,7 @@ export interface Brand {
   name: string;
   slug: string;
   description: string | null;
+  translations?: TranslationBundle<'name' | 'description'>;
   logoUrl: string | null;
   isActive: boolean;
   createdAt: string;
@@ -49,7 +58,15 @@ export interface Product {
   description: string | null;
   ingredients: string | null;
   howToUse: string | null;
+  translations?: TranslationBundle<'name' | 'description' | 'ingredients' | 'howToUse' | 'tagLabel'>;
   sizes: string[];
+  variants: {
+    size: string;
+    price: number;
+    oldPrice: number | null;
+    isDefault?: boolean;
+  }[];
+  balanceNomenclatures: { size: string | null; nomenclatureId: string }[];
   images: string[];
   tag: 'best' | 'new' | 'sale' | null;
   tagLabel: string | null;
@@ -58,6 +75,32 @@ export interface Product {
   colors: [string, string];
   icon: string;
   sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Banner {
+  _id: string;
+  title: string;
+  titleAccent: string | null;
+  subtitle: string | null;
+  badge: string | null;
+  textBackgroundColor: string | null;
+  textBackgroundOpacity: number;
+  ctaText: string | null;
+  ctaTextBackgroundColor: string | null;
+  ctaTextBackgroundOpacity: number;
+  circleText: string | null;
+  circleTextVariant: 'circle' | 'compact';
+  circleTextBackgroundColor: string | null;
+  circleTextBackgroundOpacity: number;
+  translations?: TranslationBundle<'title' | 'titleAccent' | 'subtitle' | 'badge' | 'ctaText' | 'circleText'>;
+  imageUrl: string | null;
+  targetPath: string | null;
+  showText: boolean;
+  colors: [string, string, string];
+  sortOrder: number;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -83,7 +126,15 @@ export interface StatusHistoryEntry {
 export interface Order {
   _id: string;
   orderNumber: string;
-  user: { _id: string; firstName: string; lastName: string; email: string; qrCode: string } | string;
+  user: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    email: string | null;
+    phone: string | null;
+    phoneVerified: boolean;
+    qrCode: string;
+  } | string;
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
@@ -110,6 +161,7 @@ export interface AdminUser {
   firstName: string;
   lastName: string;
   phone: string | null;
+  phoneVerified: boolean;
   birthday: string | null;
   role: 'customer' | 'admin' | 'superadmin';
   qrCode: string;

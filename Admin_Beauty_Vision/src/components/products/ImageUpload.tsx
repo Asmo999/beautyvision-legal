@@ -5,15 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Upload, X, Loader2, ImagePlus, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { mediaUrl } from '@/lib/urls';
 
 interface ImageUploadProps {
   productId: string;
   images: string[];
   onImagesChange: (images: string[]) => void;
-  apiBase: string;
 }
 
-export default function ImageUpload({ productId, images, onImagesChange, apiBase }: ImageUploadProps) {
+export default function ImageUpload({ productId, images, onImagesChange }: ImageUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -119,7 +119,7 @@ export default function ImageUpload({ productId, images, onImagesChange, apiBase
                 )}
               >
                 <img
-                  src={`${apiBase}${url}`}
+                  src={mediaUrl(url)}
                   alt={`Product image ${idx + 1}`}
                   className="h-full w-full object-cover"
                 />

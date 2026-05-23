@@ -8,6 +8,8 @@ import ProductsPage from '@/pages/ProductsPage';
 import ProductEditPage from '@/pages/ProductEditPage';
 import CategoriesPage from '@/pages/CategoriesPage';
 import BrandsPage from '@/pages/BrandsPage';
+import BannersPage from '@/pages/BannersPage';
+import BannerEditPage from '@/pages/BannerEditPage';
 import UsersPage from '@/pages/UsersPage';
 import UserDetailPage from '@/pages/UserDetailPage';
 import OrdersPage from '@/pages/OrdersPage';
@@ -40,6 +42,9 @@ export default function App() {
               <Route path="/products/:id" element={<ProductEditPage />} />
               <Route path="/categories" element={<CategoriesPage />} />
               <Route path="/brands" element={<BrandsPage />} />
+              <Route path="/banners" element={<BannersPage />} />
+              <Route path="/banners/new" element={<BannerEditPage />} />
+              <Route path="/banners/:id" element={<BannerEditPage />} />
               <Route path="/users" element={<UsersPage />} />
               <Route path="/users/:id" element={<UserDetailPage />} />
               <Route path="/orders" element={<OrdersPage />} />

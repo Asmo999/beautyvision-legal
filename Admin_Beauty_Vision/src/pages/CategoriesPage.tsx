@@ -9,8 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash2, Upload, ImageOff } from 'lucide-react';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import { mediaUrl } from '@/lib/urls';
 
 export default function CategoriesPage() {
   const qc = useQueryClient();
@@ -18,16 +17,50 @@ export default function CategoriesPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
-  const [form, setForm] = useState({ name: '', slug: '', sortOrder: 0 });
+  const [form, setForm] = useState({ name: '', nameKa: '', description: '', descriptionKa: '', slug: '', sortOrder: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const openCreate = () => { setEditing(null); setForm({ name: '', slug: '', sortOrder: 0 }); setOpen(true); };
-  const openEdit = (c: Category) => { setEditing(c); setForm({ name: c.name, slug: c.slug, sortOrder: c.sortOrder }); setOpen(true); };
+  const openCreate = () => {
+    setEditing(null);
+    setForm({ name: '', nameKa: '', description: '', descriptionKa: '', slug: '', sortOrder: 0 });
+    setOpen(true);
+  };
+  const openEdit = (c: Category) => {
+    setEditing(c);
+    setForm({
+      name: c.translations?.en?.name ?? c.name,
+      nameKa: c.translations?.ka?.name ?? '',
+      description: c.translations?.en?.description ?? c.description ?? '',
+      descriptionKa: c.translations?.ka?.description ?? '',
+      slug: c.slug,
+      sortOrder: c.sortOrder,
+    });
+    setOpen(true);
+  };
 
   const saveMutation = useMutation({
-    mutationFn: () => editing
-      ? updateCategory(editing._id, form)
-      : createCategory(form),
+    mutationFn: () => {
+      const payload = {
+        name: form.name.trim() || form.nameKa.trim(),
+        description: form.description || null,
+        translations: {
+          en: {
+            name: form.name || null,
+            description: form.description || null,
+          },
+          ka: {
+            name: form.nameKa || null,
+            description: form.descriptionKa || null,
+          },
+        },
+        slug: form.slug,
+        sortOrder: form.sortOrder,
+      };
+
+      return editing
+        ? updateCategory(editing._id, payload)
+        : createCategory(payload);
+    },
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); if (!editing) setOpen(false); },
   });
 
@@ -78,7 +111,7 @@ export default function CategoriesPage() {
               <TableRow key={c._id}>
                 <TableCell>
                   {c.imageUrl ? (
-                    <img src={`${API_BASE}${c.imageUrl}`} alt={c.name} className="h-10 w-10 rounded-md object-cover" />
+                    <img src={mediaUrl(c.imageUrl)} alt={c.name} className="h-10 w-10 rounded-md object-cover" />
                   ) : (
                     <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
                       <ImageOff className="h-4 w-4 text-muted-foreground" />
@@ -106,12 +139,24 @@ export default function CategoriesPage() {
           <DialogHeader><DialogTitle>{editing ? 'Edit Category' : 'New Category'}</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); saveMutation.mutate(); }} className="space-y-4">
             <div className="space-y-2">
-              <Label>Name</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, ...(!editing ? { slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') } : {}) })} required />
+              <Label>Name (EN)</Label>
+              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, ...(!editing ? { slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') } : {}) })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Name (KA)</Label>
+              <Input value={form.nameKa} onChange={(e) => setForm({ ...form, nameKa: e.target.value })} />
             </div>
             <div className="space-y-2">
               <Label>Slug</Label>
               <Input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} required />
+            </div>
+            <div className="space-y-2">
+              <Label>Description (EN)</Label>
+              <Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Description (KA)</Label>
+              <Input value={form.descriptionKa} onChange={(e) => setForm({ ...form, descriptionKa: e.target.value })} />
             </div>
             <div className="space-y-2">
               <Label>Sort Order</Label>
@@ -123,7 +168,7 @@ export default function CategoriesPage() {
                 <Label>Category Image</Label>
                 <div className="flex items-center gap-3">
                   {editing.imageUrl ? (
-                    <img src={`${API_BASE}${editing.imageUrl}`} alt={editing.name} className="h-16 w-16 rounded-lg object-cover border" />
+                    <img src={mediaUrl(editing.imageUrl)} alt={editing.name} className="h-16 w-16 rounded-lg object-cover border" />
                   ) : (
                     <div className="flex h-16 w-16 items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/25">
                       <ImageOff className="h-5 w-5 text-muted-foreground" />
