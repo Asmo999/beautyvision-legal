@@ -80,7 +80,7 @@ const emptyForm: BannerForm = {
   badgeKa: '',
   textBackgroundColor: '#000000',
   textBackgroundOpacity: 0,
-  ctaText: 'Shop now',
+  ctaText: '',
   ctaTextKa: '',
   ctaTextBackgroundColor: '#ffffff',
   ctaTextBackgroundOpacity: 15,
