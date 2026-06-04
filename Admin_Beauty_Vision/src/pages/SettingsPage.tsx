@@ -184,8 +184,8 @@ export default function SettingsPage() {
           Order SMS recipients
         </div>
         <p className="mb-4 text-xs text-muted-foreground">
-          Every Georgian mobile number listed here receives an SMS the moment a new order is placed.
-          The SMS includes the order number, customer name, customer phone, and total.
+          Every Georgian mobile number listed here receives an SMS once an order is confirmed
+          (payment received). The SMS includes the order number, customer name, customer phone, and total.
         </p>
 
         <div className="space-y-4">
