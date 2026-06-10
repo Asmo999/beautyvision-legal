@@ -298,7 +298,7 @@ export default function CategoriesPage() {
                       )}
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-medium">{p.name}</p>
+                          <p className="min-w-0 truncate text-sm font-medium">{p.name}</p>
                           {!p.isActive && <Badge variant="secondary" className="shrink-0">Inactive</Badge>}
                         </div>
                         <p className="truncate text-xs text-muted-foreground">{p.slug} · {formatMoney(p.price)} GEL</p>
