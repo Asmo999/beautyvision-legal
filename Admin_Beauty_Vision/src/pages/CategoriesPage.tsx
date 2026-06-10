@@ -102,13 +102,13 @@ export default function CategoriesPage() {
   };
 
   const deleteProductMutation = useMutation({
-    mutationFn: (id: string) => deleteProduct(id),
+    mutationFn: (id: string) => deleteProduct(id, { hard: true }),
     onSuccess: refreshAfterProductChange,
   });
 
   const deleteAllProductsMutation = useMutation({
     mutationFn: async (ids: string[]) => {
-      for (const id of ids) await deleteProduct(id);
+      for (const id of ids) await deleteProduct(id, { hard: true });
     },
     onSuccess: refreshAfterProductChange,
   });
@@ -255,7 +255,7 @@ export default function CategoriesPage() {
               {productsLoading
                 ? 'Checking for products in this category...'
                 : productTotal > 0
-                  ? `This category has ${productTotal} product${productTotal === 1 ? '' : 's'}. Remove them before the category can be deleted.`
+                  ? `This category has ${productTotal} product${productTotal === 1 ? '' : 's'}. Permanently delete them to remove the category.`
                   : 'This category has no products and can be safely deleted.'}
             </DialogDescription>
           </DialogHeader>
@@ -263,69 +263,76 @@ export default function CategoriesPage() {
           {productsLoading ? (
             <p className="py-6 text-center text-sm text-muted-foreground">Loading products...</p>
           ) : products.length > 0 ? (
-            <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
-              {products.map((p: Product) => {
-                const rowPending = productsBusy &&
-                  (deleteProductMutation.variables === p._id || deleteAllProductsMutation.isPending);
-                return (
-                  <div key={p._id} className="flex items-center gap-3 rounded-md border p-2">
-                    {p.images?.[0] ? (
-                      <img src={mediaUrl(p.images[0])} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
-                    ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
-                        <ImageOff className="h-4 w-4 text-muted-foreground" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted-foreground">
+                  {productTotal} product{productTotal === 1 ? '' : 's'}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={productsBusy}
+                  onClick={() => {
+                    if (confirm(`Permanently delete all ${productTotal} product${productTotal === 1 ? '' : 's'} in "${deleting?.name}"? This cannot be undone.`)) {
+                      deleteAllProductsMutation.mutate(products.map((p) => p._id));
+                    }
+                  }}
+                >
+                  <Trash2 className="mr-1 h-3.5 w-3.5 text-destructive" />
+                  {deleteAllProductsMutation.isPending ? 'Deleting...' : 'Delete all'}
+                </Button>
+              </div>
+
+              <div className="max-h-72 space-y-2 overflow-y-auto rounded-md border p-2">
+                {products.map((p: Product) => {
+                  const rowPending = productsBusy &&
+                    (deleteProductMutation.variables === p._id || deleteAllProductsMutation.isPending);
+                  return (
+                    <div key={p._id} className="flex items-center gap-3 rounded-md border p-2">
+                      {p.images?.[0] ? (
+                        <img src={mediaUrl(p.images[0])} alt={p.name} className="h-10 w-10 shrink-0 rounded-md object-cover" />
+                      ) : (
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-muted">
+                          <ImageOff className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="truncate text-sm font-medium">{p.name}</p>
+                          {!p.isActive && <Badge variant="secondary" className="shrink-0">Inactive</Badge>}
+                        </div>
+                        <p className="truncate text-xs text-muted-foreground">{p.slug} · {formatMoney(p.price)} GEL</p>
                       </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <p className="truncate text-sm font-medium">{p.name}</p>
-                        {!p.isActive && <Badge variant="secondary" className="shrink-0">Inactive</Badge>}
-                      </div>
-                      <p className="text-xs text-muted-foreground">{p.slug} · {formatMoney(p.price)} GEL</p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0"
+                        disabled={productsBusy}
+                        onClick={() => deleteProductMutation.mutate(p._id)}
+                      >
+                        <Trash2 className={`h-3.5 w-3.5 text-destructive ${rowPending ? 'animate-pulse' : ''}`} />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      disabled={productsBusy}
-                      onClick={() => deleteProductMutation.mutate(p._id)}
-                    >
-                      <Trash2 className={`h-3.5 w-3.5 ${rowPending ? 'animate-pulse' : ''} text-destructive`} />
-                    </Button>
-                  </div>
-                );
-              })}
-              {productTotal > products.length && (
-                <p className="pt-1 text-center text-xs text-muted-foreground">
-                  Showing {products.length} of {productTotal}. Delete these to load the rest.
-                </p>
-              )}
+                  );
+                })}
+                {productTotal > products.length && (
+                  <p className="pt-1 text-center text-xs text-muted-foreground">
+                    Showing {products.length} of {productTotal}. Delete these to load the rest.
+                  </p>
+                )}
+              </div>
             </div>
           ) : null}
 
-          <DialogFooter className="gap-2 sm:justify-between">
-            {products.length > 0 ? (
-              <Button
-                variant="outline"
-                disabled={productsBusy}
-                onClick={() => {
-                  if (confirm(`Delete all ${productTotal} product${productTotal === 1 ? '' : 's'} in "${deleting?.name}"? This cannot be undone.`)) {
-                    deleteAllProductsMutation.mutate(products.map((p) => p._id));
-                  }
-                }}
-              >
-                {deleteAllProductsMutation.isPending ? 'Deleting...' : `Delete all ${productTotal} product${productTotal === 1 ? '' : 's'}`}
-              </Button>
-            ) : <span />}
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
-              <Button
-                variant="destructive"
-                disabled={productsLoading || productTotal > 0 || productsBusy || deleteMutation.isPending}
-                onClick={() => deleting && deleteMutation.mutate(deleting._id)}
-              >
-                {deleteMutation.isPending ? 'Deleting...' : 'Delete Category'}
-              </Button>
-            </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+            <Button
+              variant="destructive"
+              disabled={productsLoading || productTotal > 0 || productsBusy || deleteMutation.isPending}
+              onClick={() => deleting && deleteMutation.mutate(deleting._id)}
+            >
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete Category'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

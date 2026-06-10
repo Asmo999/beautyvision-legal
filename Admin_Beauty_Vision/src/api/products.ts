@@ -40,8 +40,8 @@ export async function updateProduct(id: string, payload: Record<string, unknown>
   return data.product;
 }
 
-export async function deleteProduct(id: string): Promise<void> {
-  await apiClient.delete(`/admin/products/${id}`);
+export async function deleteProduct(id: string, opts?: { hard?: boolean }): Promise<void> {
+  await apiClient.delete(`/admin/products/${id}`, opts?.hard ? { params: { hard: 'true' } } : undefined);
 }
 
 export async function uploadProductImages(id: string, files: File[]): Promise<string[]> {
