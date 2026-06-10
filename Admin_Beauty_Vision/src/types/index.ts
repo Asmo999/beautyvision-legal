@@ -73,6 +73,7 @@ export interface Product {
   inStock: boolean;
   isActive: boolean;
   isPopular: boolean;
+  isNewArrival: boolean;
   colors: [string, string];
   icon: string;
   sortOrder: number;
