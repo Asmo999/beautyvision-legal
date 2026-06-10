@@ -72,6 +72,7 @@ export interface Product {
   tagLabel: string | null;
   inStock: boolean;
   isActive: boolean;
+  isPopular: boolean;
   colors: [string, string];
   icon: string;
   sortOrder: number;

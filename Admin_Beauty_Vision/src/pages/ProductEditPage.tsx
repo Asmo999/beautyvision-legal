@@ -30,7 +30,7 @@ interface FormState {
   ingredients: string; ingredientsKa: string;
   howToUse: string; howToUseKa: string;
   variants: VariantForm[]; tag: string; tagLabel: string; tagLabelKa: string;
-  inStock: boolean; isActive: boolean; icon: string;
+  inStock: boolean; isActive: boolean; isPopular: boolean; icon: string;
   color1: string; color2: string;
   balanceNomenclatures: BalanceNomenclatureForm[];
 }
@@ -49,7 +49,7 @@ const emptyForm: FormState = {
   ingredients: '', ingredientsKa: '',
   howToUse: '', howToUseKa: '',
   variants: [], tag: '', tagLabel: '', tagLabelKa: '',
-  inStock: true, isActive: true, icon: 'circle',
+  inStock: true, isActive: true, isPopular: false, icon: 'circle',
   color1: '#000000', color2: '#333333',
   balanceNomenclatures: [],
 };
@@ -158,6 +158,7 @@ export default function ProductEditPage() {
         tagLabelKa: product.translations?.ka?.tagLabel ?? '',
         inStock: product.inStock,
         isActive: product.isActive,
+        isPopular: product.isPopular ?? false,
         icon: product.icon,
         color1: product.colors[0],
         color2: product.colors[1],
@@ -209,6 +210,7 @@ export default function ProductEditPage() {
         tagLabel: form.tagLabel || null,
         inStock: form.inStock,
         isActive: form.isActive,
+        isPopular: form.isPopular,
         icon: form.icon,
         colors: [form.color1, form.color2],
         images,
@@ -390,6 +392,10 @@ export default function ProductEditPage() {
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.isActive} onChange={(e) => set('isActive', e.target.checked)} className="rounded" />
                 Active
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={form.isPopular} onChange={(e) => set('isPopular', e.target.checked)} className="rounded" />
+                Popular
               </label>
             </div>
           </CardContent>
