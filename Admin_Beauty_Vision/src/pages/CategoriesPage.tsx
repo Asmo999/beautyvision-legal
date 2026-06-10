@@ -1,15 +1,27 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { listCategories, createCategory, updateCategory, deleteCategory, uploadCategoryImage } from '@/api/categories';
-import type { Category } from '@/types';
+import { listProducts, deleteProduct } from '@/api/products';
+import type { Category, Product } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Pencil, Trash2, Upload, ImageOff } from 'lucide-react';
 import { mediaUrl } from '@/lib/urls';
+
+function formatMoney(value: number): string {
+  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, '');
+}
 
 export default function CategoriesPage() {
   const qc = useQueryClient();
@@ -17,6 +29,7 @@ export default function CategoriesPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Category | null>(null);
+  const [deleting, setDeleting] = useState<Category | null>(null);
   const [form, setForm] = useState({ name: '', nameKa: '', description: '', descriptionKa: '', slug: '', sortOrder: 0 });
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -72,10 +85,40 @@ export default function CategoriesPage() {
     },
   });
 
+  // Products that reference the category being deleted. A category cannot be
+  // deleted while products still point at it, so the delete dialog lists them
+  // and lets the admin clear them out first.
+  const { data: catProducts, isLoading: productsLoading } = useQuery({
+    queryKey: ['category-products', deleting?._id],
+    queryFn: () => listProducts({ category: deleting!._id, limit: 100 }),
+    enabled: !!deleting,
+  });
+  const products = catProducts?.products ?? [];
+  const productTotal = catProducts?.total ?? 0;
+
+  const refreshAfterProductChange = () => {
+    qc.invalidateQueries({ queryKey: ['category-products'] });
+    qc.invalidateQueries({ queryKey: ['products'] });
+  };
+
+  const deleteProductMutation = useMutation({
+    mutationFn: (id: string) => deleteProduct(id),
+    onSuccess: refreshAfterProductChange,
+  });
+
+  const deleteAllProductsMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      for (const id of ids) await deleteProduct(id);
+    },
+    onSuccess: refreshAfterProductChange,
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteCategory(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['categories'] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['categories'] }); setDeleting(null); },
   });
+
+  const productsBusy = deleteProductMutation.isPending || deleteAllProductsMutation.isPending;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -125,7 +168,7 @@ export default function CategoriesPage() {
                 <TableCell>
                   <div className="flex gap-1">
                     <Button variant="ghost" size="icon" onClick={() => openEdit(c)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => { if (confirm('Delete this category?')) deleteMutation.mutate(c._id); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                    <Button variant="ghost" size="icon" onClick={() => setDeleting(c)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
                   </div>
                 </TableCell>
               </TableRow>
@@ -201,6 +244,89 @@ export default function CategoriesPage() {
               <Button type="submit" disabled={saveMutation.isPending}>{saveMutation.isPending ? 'Saving...' : 'Save'}</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleting} onOpenChange={(o) => { if (!o) setDeleting(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete "{deleting?.name}"</DialogTitle>
+            <DialogDescription>
+              {productsLoading
+                ? 'Checking for products in this category...'
+                : productTotal > 0
+                  ? `This category has ${productTotal} product${productTotal === 1 ? '' : 's'}. Remove them before the category can be deleted.`
+                  : 'This category has no products and can be safely deleted.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {productsLoading ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">Loading products...</p>
+          ) : products.length > 0 ? (
+            <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
+              {products.map((p: Product) => {
+                const rowPending = productsBusy &&
+                  (deleteProductMutation.variables === p._id || deleteAllProductsMutation.isPending);
+                return (
+                  <div key={p._id} className="flex items-center gap-3 rounded-md border p-2">
+                    {p.images?.[0] ? (
+                      <img src={mediaUrl(p.images[0])} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-md bg-muted">
+                        <ImageOff className="h-4 w-4 text-muted-foreground" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-medium">{p.name}</p>
+                        {!p.isActive && <Badge variant="secondary" className="shrink-0">Inactive</Badge>}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{p.slug} · {formatMoney(p.price)} GEL</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      disabled={productsBusy}
+                      onClick={() => deleteProductMutation.mutate(p._id)}
+                    >
+                      <Trash2 className={`h-3.5 w-3.5 ${rowPending ? 'animate-pulse' : ''} text-destructive`} />
+                    </Button>
+                  </div>
+                );
+              })}
+              {productTotal > products.length && (
+                <p className="pt-1 text-center text-xs text-muted-foreground">
+                  Showing {products.length} of {productTotal}. Delete these to load the rest.
+                </p>
+              )}
+            </div>
+          ) : null}
+
+          <DialogFooter className="gap-2 sm:justify-between">
+            {products.length > 0 ? (
+              <Button
+                variant="outline"
+                disabled={productsBusy}
+                onClick={() => {
+                  if (confirm(`Delete all ${productTotal} product${productTotal === 1 ? '' : 's'} in "${deleting?.name}"? This cannot be undone.`)) {
+                    deleteAllProductsMutation.mutate(products.map((p) => p._id));
+                  }
+                }}
+              >
+                {deleteAllProductsMutation.isPending ? 'Deleting...' : `Delete all ${productTotal} product${productTotal === 1 ? '' : 's'}`}
+              </Button>
+            ) : <span />}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setDeleting(null)}>Cancel</Button>
+              <Button
+                variant="destructive"
+                disabled={productsLoading || productTotal > 0 || productsBusy || deleteMutation.isPending}
+                onClick={() => deleting && deleteMutation.mutate(deleting._id)}
+              >
+                {deleteMutation.isPending ? 'Deleting...' : 'Delete Category'}
+              </Button>
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
