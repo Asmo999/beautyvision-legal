@@ -17,12 +17,12 @@ export default function BrandsPage() {
 
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Brand | null>(null);
-  const [form, setForm] = useState({ name: '', nameKa: '', description: '', descriptionKa: '', slug: '' });
+  const [form, setForm] = useState({ name: '', nameKa: '', description: '', descriptionKa: '', slug: '', discountPercent: '' });
   const fileRef = useRef<HTMLInputElement>(null);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: '', nameKa: '', description: '', descriptionKa: '', slug: '' });
+    setForm({ name: '', nameKa: '', description: '', descriptionKa: '', slug: '', discountPercent: '' });
     setOpen(true);
   };
   const openEdit = (b: Brand) => {
@@ -33,6 +33,7 @@ export default function BrandsPage() {
       description: b.translations?.en?.description ?? b.description ?? '',
       descriptionKa: b.translations?.ka?.description ?? '',
       slug: b.slug,
+      discountPercent: b.discountPercent ? String(b.discountPercent) : '',
     });
     setOpen(true);
   };
@@ -53,6 +54,7 @@ export default function BrandsPage() {
           },
         },
         slug: form.slug,
+        discountPercent: form.discountPercent.trim() === '' ? 0 : Number(form.discountPercent),
       };
 
       return editing ? updateBrand(editing._id, payload) : createBrand(payload);
@@ -93,15 +95,16 @@ export default function BrandsPage() {
               <TableHead className="w-12"></TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Slug</TableHead>
+              <TableHead>Discount</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-24">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
             ) : brands.length === 0 ? (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground">No brands</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground">No brands</TableCell></TableRow>
             ) : brands.map((b) => (
               <TableRow key={b._id}>
                 <TableCell>
@@ -115,6 +118,7 @@ export default function BrandsPage() {
                 </TableCell>
                 <TableCell className="font-medium">{b.name}</TableCell>
                 <TableCell className="text-muted-foreground">{b.slug}</TableCell>
+                <TableCell>{b.discountPercent > 0 ? <Badge>-{b.discountPercent}%</Badge> : <span className="text-muted-foreground">—</span>}</TableCell>
                 <TableCell><Badge variant={b.isActive ? 'default' : 'secondary'}>{b.isActive ? 'Active' : 'Inactive'}</Badge></TableCell>
                 <TableCell>
                   <div className="flex gap-1">
@@ -151,6 +155,21 @@ export default function BrandsPage() {
             <div className="space-y-2">
               <Label>Description (KA)</Label>
               <Input value={form.descriptionKa} onChange={(e) => setForm({ ...form, descriptionKa: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Brand Discount (%)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                step={1}
+                placeholder="0"
+                value={form.discountPercent}
+                onChange={(e) => setForm({ ...form, discountPercent: e.target.value })}
+              />
+              <p className="text-xs text-muted-foreground">
+                Applies to every product of this brand and overrides each product's own discount. Leave 0 for none.
+              </p>
             </div>
 
             {/* Brand image - only for existing brands */}

@@ -42,6 +42,7 @@ export interface Brand {
   description: string | null;
   translations?: TranslationBundle<'name' | 'description'>;
   logoUrl: string | null;
+  discountPercent: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
