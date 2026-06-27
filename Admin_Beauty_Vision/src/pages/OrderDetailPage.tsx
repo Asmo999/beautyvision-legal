@@ -114,6 +114,19 @@ export default function OrderDetailPage() {
               <span className="text-muted-foreground">Address</span>
               <span className="text-right">{order.shippingAddress.address}</span>
             </div>
+            {order.shippingAddress.lat != null && order.shippingAddress.lng != null && (
+              <div className="flex justify-between gap-4 sm:col-span-2">
+                <span className="text-muted-foreground">Location</span>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${order.shippingAddress.lat},${order.shippingAddress.lng}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-right text-primary underline underline-offset-2"
+                >
+                  {order.shippingAddress.lat.toFixed(6)}, {order.shippingAddress.lng.toFixed(6)} ↗
+                </a>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}

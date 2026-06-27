@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Save, Truck, Gift, MessageSquare, Plus, Trash2 } from 'lucide-react';
+import { Save, Truck, Gift, MessageSquare, Plus, Trash2, RefreshCw } from 'lucide-react';
 import { getSettings, updateSettings } from '@/api/settings';
+import { getLoyaltyResetStatus, runLoyaltyReset } from '@/api/loyalty';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -22,6 +23,7 @@ function displayPhone(normalized: string): string {
 export default function SettingsPage() {
   const qc = useQueryClient();
   const { data: settings, isLoading } = useQuery({ queryKey: ['settings'], queryFn: getSettings });
+  const { data: loyaltyStatus } = useQuery({ queryKey: ['loyalty-reset-status'], queryFn: getLoyaltyResetStatus });
 
   const [deliveryFee, setDeliveryFee] = useState<string>('');
   const [freeDeliveryDays, setFreeDeliveryDays] = useState<string>('');
@@ -30,6 +32,8 @@ export default function SettingsPage() {
   const [recipientError, setRecipientError] = useState<string | null>(null);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [resetDone, setResetDone] = useState<{ processed: number } | null>(null);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!settings) return;
@@ -89,6 +93,18 @@ export default function SettingsPage() {
     onError: (err: Error) => {
       const message = err instanceof Error ? err.message : 'Could not save settings';
       setError(message);
+    },
+  });
+
+  const resetMutation = useMutation({
+    mutationFn: runLoyaltyReset,
+    onSuccess: (res) => {
+      setResetError(null);
+      setResetDone({ processed: res.processed });
+      qc.invalidateQueries({ queryKey: ['loyalty-reset-status'] });
+    },
+    onError: (err: Error) => {
+      setResetError(err instanceof Error ? err.message : 'Could not reset tiers');
     },
   });
 
@@ -177,6 +193,43 @@ export default function SettingsPage() {
           )}
         </section>
       </div>
+
+      <section className="rounded-lg border bg-card p-6">
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <RefreshCw className="h-4 w-4" />
+          Loyalty tiers
+        </div>
+        <p className="mb-4 text-xs text-muted-foreground">
+          At the start of each year, recalculate every customer's loyalty tier from last year's spending.
+          Active customers update on their own; this rolls over everyone, including people who haven't opened the app.
+        </p>
+        {loyaltyStatus?.resetPending ? (
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-sm">
+              {loyaltyStatus.bypassGate ? (
+                'Reset gate bypassed (test mode) — you can run this any time.'
+              ) : (
+                <>New year (<span className="font-medium">{loyaltyStatus.currentYear}</span>) — tiers haven't been reset yet.</>
+              )}
+            </p>
+            <Button onClick={() => resetMutation.mutate()} disabled={resetMutation.isPending}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${resetMutation.isPending ? 'animate-spin' : ''}`} />
+              {resetMutation.isPending ? 'Resetting…' : `Reset tiers for ${loyaltyStatus.currentYear}`}
+            </Button>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            Tiers are up to date for {loyaltyStatus?.currentYear ?? new Date().getFullYear()}
+            {loyaltyStatus?.lastSweepYear ? ` · last reset ${loyaltyStatus.lastSweepYear}` : ''}. No action needed.
+          </p>
+        )}
+        {resetDone && (
+          <p className="mt-3 text-xs text-emerald-600">Done — {resetDone.processed} customers recalculated.</p>
+        )}
+        {resetError && (
+          <p className="mt-3 text-xs text-destructive">{resetError}</p>
+        )}
+      </section>
 
       <section className="rounded-lg border bg-card p-6">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">

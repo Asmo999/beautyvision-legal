@@ -151,6 +151,8 @@ export interface Order {
     city: string;
     address: string;
     zip: string | null;
+    lat: number | null;
+    lng: number | null;
   } | null;
   notes: string | null;
   statusHistory: StatusHistoryEntry[];
