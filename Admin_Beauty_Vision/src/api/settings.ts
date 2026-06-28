@@ -4,6 +4,10 @@ export interface AdminSettings {
   deliveryFee: number;
   freeDeliveryDays: number;
   orderNotificationRecipients: string[];
+  minIosVersion: string;
+  minAndroidVersion: string;
+  iosStoreUrl: string;
+  androidStoreUrl: string;
   updatedAt: string | null;
 }
 

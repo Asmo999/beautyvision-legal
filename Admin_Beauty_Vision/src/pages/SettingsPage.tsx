@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Save, Truck, Gift, MessageSquare, Plus, Trash2, RefreshCw } from 'lucide-react';
+import { Save, Truck, Gift, MessageSquare, Plus, Trash2, RefreshCw, Smartphone } from 'lucide-react';
 import { getSettings, updateSettings } from '@/api/settings';
 import { getLoyaltyResetStatus, runLoyaltyReset } from '@/api/loyalty';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,9 @@ function displayPhone(normalized: string): string {
   return `+995 ${normalized.slice(0, 3)} ${normalized.slice(3, 5)} ${normalized.slice(5, 7)} ${normalized.slice(7)}`;
 }
 
+// Dotted numeric version like "1.0.3" (1–4 segments) — mirrors VERSION_PATTERN on the backend.
+const VERSION_PATTERN = /^\d+(\.\d+){0,3}$/;
+
 export default function SettingsPage() {
   const qc = useQueryClient();
   const { data: settings, isLoading } = useQuery({ queryKey: ['settings'], queryFn: getSettings });
@@ -27,6 +30,10 @@ export default function SettingsPage() {
 
   const [deliveryFee, setDeliveryFee] = useState<string>('');
   const [freeDeliveryDays, setFreeDeliveryDays] = useState<string>('');
+  const [minIosVersion, setMinIosVersion] = useState<string>('');
+  const [minAndroidVersion, setMinAndroidVersion] = useState<string>('');
+  const [iosStoreUrl, setIosStoreUrl] = useState<string>('');
+  const [androidStoreUrl, setAndroidStoreUrl] = useState<string>('');
   const [recipients, setRecipients] = useState<string[]>([]);
   const [newRecipient, setNewRecipient] = useState<string>('');
   const [recipientError, setRecipientError] = useState<string | null>(null);
@@ -39,6 +46,10 @@ export default function SettingsPage() {
     if (!settings) return;
     setDeliveryFee(String(settings.deliveryFee));
     setFreeDeliveryDays(String(settings.freeDeliveryDays));
+    setMinIosVersion(settings.minIosVersion ?? '');
+    setMinAndroidVersion(settings.minAndroidVersion ?? '');
+    setIosStoreUrl(settings.iosStoreUrl ?? '');
+    setAndroidStoreUrl(settings.androidStoreUrl ?? '');
     setRecipients(settings.orderNotificationRecipients ?? []);
   }, [settings]);
 
@@ -80,10 +91,23 @@ export default function SettingsPage() {
         throw new Error('Free delivery days must be a non-negative integer');
       }
 
+      const ios = minIosVersion.trim();
+      const android = minAndroidVersion.trim();
+      if (!VERSION_PATTERN.test(ios)) {
+        throw new Error('Minimum iOS version must look like 1.0.3');
+      }
+      if (!VERSION_PATTERN.test(android)) {
+        throw new Error('Minimum Android version must look like 1.0.3');
+      }
+
       return updateSettings({
         deliveryFee: fee,
         freeDeliveryDays: days,
         orderNotificationRecipients: recipients,
+        minIosVersion: ios,
+        minAndroidVersion: android,
+        iosStoreUrl: iosStoreUrl.trim(),
+        androidStoreUrl: androidStoreUrl.trim(),
       });
     },
     onSuccess: (next) => {
@@ -182,6 +206,10 @@ export default function SettingsPage() {
                 <dd className="font-medium">{settings.orderNotificationRecipients?.length ?? 0}</dd>
               </div>
               <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Min version (iOS / Android)</dt>
+                <dd className="font-medium">{settings.minIosVersion} / {settings.minAndroidVersion}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Last updated</dt>
                 <dd className="font-medium">
                   {settings.updatedAt ? new Date(settings.updatedAt).toLocaleString() : '—'}
@@ -193,6 +221,63 @@ export default function SettingsPage() {
           )}
         </section>
       </div>
+
+      <section className="rounded-lg border bg-card p-6">
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <Smartphone className="h-4 w-4" />
+          Force app update
+        </div>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Any app below the minimum version is blocked on launch and sent to the store. Keep the default
+          (1.0.0) to force nothing. Only apps that already contain the update gate are affected — users on
+          older builds without it must update through the store as usual.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="minIosVersion">Minimum iOS version</Label>
+            <Input
+              id="minIosVersion"
+              placeholder="1.0.3"
+              value={minIosVersion}
+              onChange={(e) => setMinIosVersion(e.target.value)}
+              disabled={isLoading || mutation.isPending}
+            />
+          </div>
+          <div>
+            <Label htmlFor="minAndroidVersion">Minimum Android version</Label>
+            <Input
+              id="minAndroidVersion"
+              placeholder="1.0.3"
+              value={minAndroidVersion}
+              onChange={(e) => setMinAndroidVersion(e.target.value)}
+              disabled={isLoading || mutation.isPending}
+            />
+          </div>
+          <div>
+            <Label htmlFor="iosStoreUrl">iOS store URL</Label>
+            <Input
+              id="iosStoreUrl"
+              placeholder="https://apps.apple.com/app/id…"
+              value={iosStoreUrl}
+              onChange={(e) => setIosStoreUrl(e.target.value)}
+              disabled={isLoading || mutation.isPending}
+            />
+          </div>
+          <div>
+            <Label htmlFor="androidStoreUrl">Android store URL</Label>
+            <Input
+              id="androidStoreUrl"
+              placeholder="https://play.google.com/store/apps/details?id=…"
+              value={androidStoreUrl}
+              onChange={(e) => setAndroidStoreUrl(e.target.value)}
+              disabled={isLoading || mutation.isPending}
+            />
+          </div>
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          The store URL must be set for that platform, otherwise the update is not forced (fail-open).
+        </p>
+      </section>
 
       <section className="rounded-lg border bg-card p-6">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
