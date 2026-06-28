@@ -1,5 +1,16 @@
 import apiClient from './client';
 
+export interface LoyaltyDiscountTier {
+  key: string;
+  threshold: number;
+  percent: number;
+}
+
+export interface LoyaltyDiscountConfig {
+  enabled: boolean;
+  tiers: LoyaltyDiscountTier[];
+}
+
 export interface AdminSettings {
   deliveryFee: number;
   freeDeliveryDays: number;
@@ -8,6 +19,7 @@ export interface AdminSettings {
   minAndroidVersion: string;
   iosStoreUrl: string;
   androidStoreUrl: string;
+  loyaltyDiscount: LoyaltyDiscountConfig;
   updatedAt: string | null;
 }
 

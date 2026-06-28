@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Save, Truck, Gift, MessageSquare, Plus, Trash2, RefreshCw, Smartphone } from 'lucide-react';
+import { Save, Truck, Gift, MessageSquare, Plus, Trash2, RefreshCw, Smartphone, Trophy } from 'lucide-react';
 import { getSettings, updateSettings } from '@/api/settings';
 import { getLoyaltyResetStatus, runLoyaltyReset } from '@/api/loyalty';
 import { Button } from '@/components/ui/button';
@@ -23,6 +23,14 @@ function displayPhone(normalized: string): string {
 // Dotted numeric version like "1.0.3" (1–4 segments) — mirrors VERSION_PATTERN on the backend.
 const VERSION_PATTERN = /^\d+(\.\d+){0,3}$/;
 
+// A tier row while editing — threshold/percent kept as strings so the inputs can
+// hold intermediate values; parsed and validated on save.
+type TierDraft = { key: string; threshold: string; percent: string };
+
+function tierLabel(key: string): string {
+  return key.charAt(0).toUpperCase() + key.slice(1);
+}
+
 export default function SettingsPage() {
   const qc = useQueryClient();
   const { data: settings, isLoading } = useQuery({ queryKey: ['settings'], queryFn: getSettings });
@@ -37,6 +45,8 @@ export default function SettingsPage() {
   const [recipients, setRecipients] = useState<string[]>([]);
   const [newRecipient, setNewRecipient] = useState<string>('');
   const [recipientError, setRecipientError] = useState<string | null>(null);
+  const [loyaltyEnabled, setLoyaltyEnabled] = useState<boolean>(true);
+  const [tierDrafts, setTierDrafts] = useState<TierDraft[]>([]);
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [resetDone, setResetDone] = useState<{ processed: number } | null>(null);
@@ -51,6 +61,14 @@ export default function SettingsPage() {
     setIosStoreUrl(settings.iosStoreUrl ?? '');
     setAndroidStoreUrl(settings.androidStoreUrl ?? '');
     setRecipients(settings.orderNotificationRecipients ?? []);
+    setLoyaltyEnabled(settings.loyaltyDiscount?.enabled ?? true);
+    setTierDrafts(
+      (settings.loyaltyDiscount?.tiers ?? []).map((t) => ({
+        key: t.key,
+        threshold: String(t.threshold),
+        percent: String(t.percent),
+      })),
+    );
   }, [settings]);
 
   const recipientsDirty = useMemo(() => {
@@ -58,6 +76,23 @@ export default function SettingsPage() {
     const b = (settings?.orderNotificationRecipients ?? []).join(',');
     return a !== b;
   }, [recipients, settings]);
+
+  const loyaltyDirty = useMemo(() => {
+    if (!settings) return false;
+    const current = JSON.stringify({
+      enabled: settings.loyaltyDiscount?.enabled ?? true,
+      tiers: (settings.loyaltyDiscount?.tiers ?? []).map((t) => ({ key: t.key, threshold: t.threshold, percent: t.percent })),
+    });
+    const draft = JSON.stringify({
+      enabled: loyaltyEnabled,
+      tiers: tierDrafts.map((t) => ({ key: t.key, threshold: Number(t.threshold), percent: Number(t.percent) })),
+    });
+    return current !== draft;
+  }, [settings, loyaltyEnabled, tierDrafts]);
+
+  function updateTier(index: number, field: 'threshold' | 'percent', value: string): void {
+    setTierDrafts((prev) => prev.map((t, i) => (i === index ? { ...t, [field]: value } : t)));
+  }
 
   function handleAddRecipient(): void {
     const normalized = normalizeGeorgianPhone(newRecipient);
@@ -100,6 +135,18 @@ export default function SettingsPage() {
         throw new Error('Minimum Android version must look like 1.0.3');
       }
 
+      const tiers = tierDrafts.map((t) => {
+        const threshold = Number(t.threshold);
+        const percent = Number(t.percent);
+        if (!Number.isFinite(threshold) || threshold < 0) {
+          throw new Error(`${tierLabel(t.key)} threshold must be a non-negative number`);
+        }
+        if (!Number.isFinite(percent) || percent < 0 || percent > 100) {
+          throw new Error(`${tierLabel(t.key)} discount must be between 0 and 100`);
+        }
+        return { key: t.key, threshold, percent };
+      });
+
       return updateSettings({
         deliveryFee: fee,
         freeDeliveryDays: days,
@@ -108,6 +155,7 @@ export default function SettingsPage() {
         minAndroidVersion: android,
         iosStoreUrl: iosStoreUrl.trim(),
         androidStoreUrl: androidStoreUrl.trim(),
+        loyaltyDiscount: { enabled: loyaltyEnabled, tiers },
       });
     },
     onSuccess: (next) => {
@@ -281,8 +329,70 @@ export default function SettingsPage() {
 
       <section className="rounded-lg border bg-card p-6">
         <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-          <RefreshCw className="h-4 w-4" />
+          <Trophy className="h-4 w-4" />
           Loyalty tiers
+        </div>
+        <p className="mb-4 text-xs text-muted-foreground">
+          A customer's quarterly spend earns a discount on every order. Set the qualifying spend (GEL)
+          and the discount (%) for each tier. These apply storefront-wide and show on the customer's wallet screen.
+        </p>
+
+        <label className="mb-4 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            className="h-4 w-4 rounded border-input"
+            checked={loyaltyEnabled}
+            onChange={(e) => setLoyaltyEnabled(e.target.checked)}
+            disabled={isLoading || mutation.isPending}
+          />
+          Loyalty discount enabled
+        </label>
+
+        {tierDrafts.length === 0 ? (
+          <p className="rounded-md border border-dashed bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
+            No tiers configured.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            <div className="hidden grid-cols-[110px_1fr_1fr] gap-3 px-1 text-xs font-medium text-muted-foreground sm:grid">
+              <span>Tier</span>
+              <span>Threshold (GEL)</span>
+              <span>Discount (%)</span>
+            </div>
+            {tierDrafts.map((tier, i) => (
+              <div key={tier.key} className="grid grid-cols-1 gap-3 sm:grid-cols-[110px_1fr_1fr] sm:items-center">
+                <span className="text-sm font-medium">{tierLabel(tier.key)}</span>
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.01"
+                  aria-label={`${tierLabel(tier.key)} threshold (GEL)`}
+                  value={tier.threshold}
+                  onChange={(e) => updateTier(i, 'threshold', e.target.value)}
+                  disabled={isLoading || mutation.isPending || !loyaltyEnabled}
+                />
+                <Input
+                  type="number"
+                  inputMode="numeric"
+                  min="0"
+                  max="100"
+                  step="1"
+                  aria-label={`${tierLabel(tier.key)} discount (%)`}
+                  value={tier.percent}
+                  onChange={(e) => updateTier(i, 'percent', e.target.value)}
+                  disabled={isLoading || mutation.isPending || !loyaltyEnabled}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="my-6 border-t" />
+
+        <div className="mb-2 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <RefreshCw className="h-4 w-4" />
+          Yearly reset
         </div>
         <p className="mb-4 text-xs text-muted-foreground">
           At the start of each year, recalculate every customer's loyalty tier from last year's spending.
@@ -378,6 +488,9 @@ export default function SettingsPage() {
       <div className="flex items-center justify-end gap-3">
         {recipientsDirty && (
           <span className="text-xs text-amber-600">Unsaved recipient changes</span>
+        )}
+        {loyaltyDirty && (
+          <span className="text-xs text-amber-600">Unsaved loyalty tier changes</span>
         )}
         {savedAt && !mutation.isPending && (
           <span className="text-xs text-muted-foreground">
