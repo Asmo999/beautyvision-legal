@@ -1,9 +1,23 @@
 import apiClient from './client';
-import type { Category } from '@/types';
+import type { Category, CategoryBrandDisplay } from '@/types';
 
 export async function listCategories(): Promise<Category[]> {
   const { data } = await apiClient.get('/admin/categories');
   return data.categories;
+}
+
+export async function listCategoryBrands(
+  categoryId: string,
+): Promise<{ category: Category; brands: CategoryBrandDisplay[] }> {
+  const { data } = await apiClient.get(`/admin/categories/${categoryId}/brands`);
+  return data;
+}
+
+export async function updateCategoryBrandPriorities(
+  categoryId: string,
+  priorities: { brand: string; priority: number }[],
+): Promise<void> {
+  await apiClient.put(`/admin/categories/${categoryId}/brand-priorities`, { priorities });
 }
 
 export async function createCategory(payload: Partial<Category>): Promise<Category> {

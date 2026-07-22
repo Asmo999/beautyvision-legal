@@ -43,9 +43,18 @@ export interface Brand {
   translations?: TranslationBundle<'name' | 'description'>;
   logoUrl: string | null;
   discountPercent: number;
+  categoryPriorities: { category: string; priority: number }[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface CategoryBrandDisplay {
+  _id: string;
+  name: string;
+  logoUrl: string | null;
+  productCount: number;
+  priority: number | null;
 }
 
 export interface Product {
