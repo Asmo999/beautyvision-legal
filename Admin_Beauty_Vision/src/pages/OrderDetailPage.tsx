@@ -94,6 +94,14 @@ export default function OrderDetailPage() {
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Subtotal</span><span>{order.subtotal} GEL</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Delivery</span><span>{order.deliveryFee} GEL</span></div>
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Delivery time</span>
+              <span className="text-right">
+                {order.deliveryMode === 'scheduled' && order.scheduledDeliveryAt
+                  ? new Date(order.scheduledDeliveryAt).toLocaleString()
+                  : 'ASAP'}
+              </span>
+            </div>
             <div className="flex justify-between font-bold"><span>Total</span><span>{order.total} GEL</span></div>
             <Separator />
             <div className="flex justify-between"><span className="text-muted-foreground">Points Earned</span><span className="text-green-600">+{order.pointsEarned}</span></div>

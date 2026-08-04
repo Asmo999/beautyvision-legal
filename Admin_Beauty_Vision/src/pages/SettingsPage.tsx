@@ -38,6 +38,7 @@ export default function SettingsPage() {
 
   const [deliveryFee, setDeliveryFee] = useState<string>('');
   const [freeDeliveryDays, setFreeDeliveryDays] = useState<string>('');
+  const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<string>('');
   const [minIosVersion, setMinIosVersion] = useState<string>('');
   const [minAndroidVersion, setMinAndroidVersion] = useState<string>('');
   const [iosStoreUrl, setIosStoreUrl] = useState<string>('');
@@ -56,6 +57,7 @@ export default function SettingsPage() {
     if (!settings) return;
     setDeliveryFee(String(settings.deliveryFee));
     setFreeDeliveryDays(String(settings.freeDeliveryDays));
+    setFreeDeliveryThreshold(String(settings.freeDeliveryThreshold));
     setMinIosVersion(settings.minIosVersion ?? '');
     setMinAndroidVersion(settings.minAndroidVersion ?? '');
     setIosStoreUrl(settings.iosStoreUrl ?? '');
@@ -118,12 +120,16 @@ export default function SettingsPage() {
       setError(null);
       const fee = Number(deliveryFee);
       const days = Number(freeDeliveryDays);
+      const threshold = Number(freeDeliveryThreshold);
 
       if (!Number.isFinite(fee) || fee < 0) {
         throw new Error('Delivery fee must be a non-negative number');
       }
       if (!Number.isInteger(days) || days < 0) {
         throw new Error('Free delivery days must be a non-negative integer');
+      }
+      if (!Number.isFinite(threshold) || threshold < 0) {
+        throw new Error('Free delivery threshold must be a non-negative number');
       }
 
       const ios = minIosVersion.trim();
@@ -150,6 +156,7 @@ export default function SettingsPage() {
       return updateSettings({
         deliveryFee: fee,
         freeDeliveryDays: days,
+        freeDeliveryThreshold: threshold,
         orderNotificationRecipients: recipients,
         minIosVersion: ios,
         minAndroidVersion: android,
@@ -230,6 +237,22 @@ export default function SettingsPage() {
                 Every new account gets this many days of free delivery after registering. 90 = roughly 3 months.
               </p>
             </div>
+            <div>
+              <Label htmlFor="freeDeliveryThreshold">Free delivery threshold (GEL)</Label>
+              <Input
+                id="freeDeliveryThreshold"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={freeDeliveryThreshold}
+                onChange={(e) => setFreeDeliveryThreshold(e.target.value)}
+                disabled={isLoading || mutation.isPending}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Orders at or above this subtotal qualify for free delivery. Set to 0 to disable the threshold.
+              </p>
+            </div>
           </div>
         </section>
 
@@ -248,6 +271,10 @@ export default function SettingsPage() {
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Free delivery window</dt>
                 <dd className="font-medium">{settings.freeDeliveryDays} days</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Free delivery threshold</dt>
+                <dd className="font-medium">{settings.freeDeliveryThreshold > 0 ? `₾ ${settings.freeDeliveryThreshold.toFixed(2)}` : 'Disabled'}</dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">SMS recipients</dt>

@@ -150,6 +150,8 @@ export interface Order {
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
+  deliveryMode: 'asap' | 'scheduled';
+  scheduledDeliveryAt: string | null;
   total: number;
   status: OrderStatus;
   pointsEarned: number;
