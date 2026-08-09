@@ -156,6 +156,18 @@ export interface Order {
   status: OrderStatus;
   pointsEarned: number;
   pointsRedeemed: number;
+  paymentProvider: 'bog' | 'flitt' | null;
+  bogOrderId: string | null;
+  bogPaymentAmount: number | null;
+  flittPaymentId: string | null;
+  flittPaymentAmount: number | null;
+  paidAt: string | null;
+  refundStatus: 'processing' | 'requested' | 'refunded' | 'failed' | null;
+  refundAmount: number | null;
+  refundProviderActionId: string | null;
+  refundRequestedAt: string | null;
+  refundedAt: string | null;
+  refundError: string | null;
   shippingAddress: {
     fullName: string;
     phone: string;

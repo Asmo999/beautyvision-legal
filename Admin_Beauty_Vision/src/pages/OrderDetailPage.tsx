@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ArrowLeft } from 'lucide-react';
+import type { AxiosError } from 'axios';
 
 const STATUS_VARIANT: Record<OrderStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
   pending: 'outline', confirmed: 'secondary', processing: 'secondary',
@@ -41,13 +42,21 @@ export default function OrderDetailPage() {
 
   const refundMut = useMutation({
     mutationFn: () => refundOrder(id!, 'Refunded by admin'),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['order', id] }),
+    onSettled: () => qc.invalidateQueries({ queryKey: ['order', id] }),
   });
 
   if (isLoading) return <div className="text-muted-foreground">Loading...</div>;
   if (!order) return <div className="text-muted-foreground">Order not found</div>;
 
   const customer = typeof order.user === 'string' ? null : order.user;
+  const refundInProgress = order.refundStatus === 'processing' || order.refundStatus === 'requested';
+  const canRefund = Boolean(
+    order.paidAt &&
+    order.status !== 'refunded' &&
+    order.status !== 'cancelled' &&
+    !refundInProgress,
+  );
+  const refundError = (refundMut.error as AxiosError<{ message?: string }> | null)?.response?.data?.message;
 
   return (
     <div className="max-w-3xl">
@@ -103,6 +112,19 @@ export default function OrderDetailPage() {
               </span>
             </div>
             <div className="flex justify-between font-bold"><span>Total</span><span>{order.total} GEL</span></div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Payment</span>
+              <span>{order.paymentProvider === 'flitt' ? 'TBC / Flitt' : order.paymentProvider === 'bog' ? 'BOG' : '-'}</span>
+            </div>
+            {order.refundStatus && (
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Refund</span>
+                <Badge variant={order.refundStatus === 'failed' ? 'destructive' : 'outline'}>
+                  {order.refundStatus}
+                </Badge>
+              </div>
+            )}
+            {order.refundError && <p className="text-right text-xs text-destructive">{order.refundError}</p>}
             <Separator />
             <div className="flex justify-between"><span className="text-muted-foreground">Points Earned</span><span className="text-green-600">+{order.pointsEarned}</span></div>
             {order.pointsRedeemed > 0 && (
@@ -172,15 +194,27 @@ export default function OrderDetailPage() {
       <Separator className="my-6" />
 
       <div className="mb-4 flex gap-2">
-        <Button size="sm" variant="outline" onClick={() => { setNewStatus(order.status); setStatusOpen(true); }}>
-          Update Status
-        </Button>
-        {order.status !== 'refunded' && order.status !== 'cancelled' && (
-          <Button size="sm" variant="destructive" onClick={() => { if (confirm('Process refund for this order?')) refundMut.mutate(); }}>
-            Refund
+        {order.status !== 'refunded' && (
+          <Button size="sm" variant="outline" disabled={refundInProgress} onClick={() => { setNewStatus(order.status); setStatusOpen(true); }}>
+            Update Status
+          </Button>
+        )}
+        {canRefund && (
+          <Button
+            size="sm"
+            variant="destructive"
+            disabled={refundMut.isPending}
+            onClick={() => {
+              const provider = order.paymentProvider === 'flitt' ? 'TBC / Flitt' : order.paymentProvider === 'bog' ? 'BOG' : 'the original payment method';
+              const amount = order.refundAmount ?? (order.paymentProvider === 'bog' ? order.bogPaymentAmount : order.flittPaymentAmount) ?? order.total;
+              if (confirm(`Refund ${amount.toFixed(2)} GEL through ${provider}? This cannot be undone.`)) refundMut.mutate();
+            }}
+          >
+            {refundMut.isPending ? 'Requesting refund...' : order.refundStatus === 'failed' ? 'Retry Refund' : 'Refund'}
           </Button>
         )}
       </div>
+      {refundError && <p className="mb-4 text-sm text-destructive">{refundError}</p>}
 
       <Card>
         <CardHeader><CardTitle className="text-base">Status History</CardTitle></CardHeader>
@@ -212,7 +246,7 @@ export default function OrderDetailPage() {
               <Select value={newStatus} onValueChange={(value) => setNewStatus(value ?? '')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'].map((s) => (
+                  {['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((s) => (
                     <SelectItem key={s} value={s}>{s}</SelectItem>
                   ))}
                 </SelectContent>
