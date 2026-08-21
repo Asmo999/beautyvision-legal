@@ -40,6 +40,14 @@ function existingFile(...parts) {
 createServer((req, res) => {
   const pathname = decodeURIComponent(new URL(req.url || '/', 'http://localhost').pathname);
 
+  if (pathname === '/google-play') {
+    res.writeHead(307, {
+      Location: 'https://play.google.com/store/apps/details?id=com.asmodeuslasha.appFrontBeautyVision&hl=en',
+      'Cache-Control': 'no-store',
+    });
+    return res.end();
+  }
+
   if (pathname === '/') {
     return sendFile(res, existingFile('privacy-policy.html'));
   }

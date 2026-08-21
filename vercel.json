@@ -2,6 +2,13 @@
   "cleanUrls": true,
   "buildCommand": "npm run build:vercel",
   "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/google-play",
+      "destination": "https://play.google.com/store/apps/details?id=com.asmodeuslasha.appFrontBeautyVision&hl=en",
+      "permanent": false
+    }
+  ],
   "rewrites": [
     { "source": "/", "destination": "/privacy-policy" },
     { "source": "/admin/assets/:path*", "destination": "/admin/assets/:path*" },
