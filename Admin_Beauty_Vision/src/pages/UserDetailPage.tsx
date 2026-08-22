@@ -12,7 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Plus } from 'lucide-react';
+import { ArrowLeft, Calculator, Plus } from 'lucide-react';
+
+const POINT_VALUE_GEL = 0.01;
 
 export default function UserDetailPage() {
   const { id } = useParams();
@@ -29,11 +31,15 @@ export default function UserDetailPage() {
 
   const [bonusOpen, setBonusOpen] = useState(false);
   const [bonusPoints, setBonusPoints] = useState('');
+  const [bonusGel, setBonusGel] = useState('');
   const [bonusDesc, setBonusDesc] = useState('');
+  const [discountOpen, setDiscountOpen] = useState(false);
+  const [purchaseGel, setPurchaseGel] = useState('');
+  const [redemptionPoints, setRedemptionPoints] = useState('');
 
   const bonusMut = useMutation({
     mutationFn: () => adjustBonus(id!, Number(bonusPoints), bonusDesc),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['user', id] }); setBonusOpen(false); setBonusPoints(''); setBonusDesc(''); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['user', id] }); setBonusOpen(false); setBonusPoints(''); setBonusGel(''); setBonusDesc(''); },
   });
 
   const verifyMut = useMutation({
@@ -50,6 +56,35 @@ export default function UserDetailPage() {
   if (!data) return <div className="text-muted-foreground">User not found</div>;
 
   const { user, transactions } = data;
+
+  const updateBonusPoints = (value: string) => {
+    setBonusPoints(value);
+    const points = Number(value);
+    setBonusGel(value.trim() !== '' && Number.isFinite(points) ? (points * POINT_VALUE_GEL).toFixed(2) : '');
+  };
+
+  const updateBonusGel = (value: string) => {
+    setBonusGel(value);
+    const gel = Number(value);
+    setBonusPoints(value.trim() !== '' && Number.isFinite(gel) ? String(Math.round(gel / POINT_VALUE_GEL)) : '');
+  };
+
+  const parsedPurchaseGel = Number(purchaseGel);
+  const hasValidPurchase = purchaseGel.trim() !== '' && Number.isFinite(parsedPurchaseGel) && parsedPurchaseGel > 0;
+  const parsedRedemptionPoints = Number(redemptionPoints);
+  const requestedRedemptionPoints = redemptionPoints.trim() !== '' && Number.isFinite(parsedRedemptionPoints)
+    ? Math.max(0, Math.floor(parsedRedemptionPoints))
+    : 0;
+  const maxPointsForPurchase = hasValidPurchase ? Math.round(parsedPurchaseGel / POINT_VALUE_GEL) : 0;
+  const usablePoints = Math.min(requestedRedemptionPoints, user.bonusPoints, maxPointsForPurchase);
+  const discountGel = usablePoints * POINT_VALUE_GEL;
+  const discountPercent = hasValidPurchase ? (discountGel / parsedPurchaseGel) * 100 : 0;
+  const amountToPay = hasValidPurchase ? Math.max(0, parsedPurchaseGel - discountGel) : 0;
+
+  const useAvailablePoints = () => {
+    if (!hasValidPurchase) return;
+    setRedemptionPoints(String(Math.min(user.bonusPoints, maxPointsForPurchase)));
+  };
 
   return (
     <div className="max-w-3xl">
@@ -81,7 +116,7 @@ export default function UserDetailPage() {
           <CardHeader><CardTitle className="text-base">Loyalty</CardTitle></CardHeader>
           <CardContent className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-muted-foreground">Bonus Points</span><span className="text-lg font-bold">{user.bonusPoints}</span></div>
-            <div className="flex justify-between"><span className="text-muted-foreground">GEL Value</span><span>{(user.bonusPoints * 0.01).toFixed(2)} GEL</span></div>
+            <div className="flex justify-between"><span className="text-muted-foreground">GEL Value</span><span>{(user.bonusPoints * POINT_VALUE_GEL).toFixed(2)} GEL</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Cashback Rate</span><span>{user.cashbackRate}%</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Total Spend</span><span>{user.physicalSpendTotal} GEL</span></div>
             <div className="flex justify-between"><span className="text-muted-foreground">Orders</span><span>{user.orderCount}</span></div>
@@ -94,6 +129,9 @@ export default function UserDetailPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         <Button size="sm" variant="outline" onClick={() => setBonusOpen(true)}>
           <Plus className="mr-1 h-3.5 w-3.5" />Adjust Points
+        </Button>
+        <Button size="sm" variant="outline" onClick={() => setDiscountOpen(true)}>
+          <Calculator className="mr-1 h-3.5 w-3.5" />Discount Calculator
         </Button>
         <Button size="sm" variant="outline" onClick={() => verifyMut.mutate()}>
           {user.isVerified ? 'Unverify' : 'Verify'} Account
@@ -146,7 +184,21 @@ export default function UserDetailPage() {
           <form onSubmit={(e) => { e.preventDefault(); bonusMut.mutate(); }} className="space-y-4">
             <div className="space-y-2">
               <Label>Points (positive to add, negative to deduct)</Label>
-              <Input type="number" value={bonusPoints} onChange={(e) => setBonusPoints(e.target.value)} required placeholder="e.g., 100 or -50" />
+              <Input type="number" value={bonusPoints} onChange={(e) => updateBonusPoints(e.target.value)} required placeholder="e.g., 100 or -50" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bonus-gel">Lari equivalent (GEL)</Label>
+              <Input
+                id="bonus-gel"
+                type="number"
+                step="0.01"
+                value={bonusGel}
+                onChange={(e) => updateBonusGel(e.target.value)}
+                placeholder="e.g., 1.00 or -0.50"
+              />
+              <p className="text-xs text-muted-foreground" aria-live="polite">
+                Enter either value — 1 GEL equals 100 bonus points.
+              </p>
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
@@ -157,6 +209,65 @@ export default function UserDetailPage() {
               <Button type="submit" disabled={bonusMut.isPending}>{bonusMut.isPending ? 'Saving...' : 'Apply'}</Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={discountOpen} onOpenChange={setDiscountOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Bonus Points Discount Calculator</DialogTitle></DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="purchase-gel">Purchase total (GEL)</Label>
+              <Input
+                id="purchase-gel"
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={purchaseGel}
+                onChange={(e) => setPurchaseGel(e.target.value)}
+                placeholder="e.g., 80.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="redemption-points">Points to use</Label>
+                <Button type="button" variant="outline" size="sm" onClick={useAvailablePoints} disabled={!hasValidPurchase || user.bonusPoints <= 0}>
+                  Use available points
+                </Button>
+              </div>
+              <Input
+                id="redemption-points"
+                type="number"
+                min="0"
+                step="1"
+                value={redemptionPoints}
+                onChange={(e) => setRedemptionPoints(e.target.value)}
+                placeholder="e.g., 100"
+              />
+              <p className="text-xs text-muted-foreground">
+                {usablePoints.toLocaleString()} / {user.bonusPoints.toLocaleString()} available points will be used.
+              </p>
+            </div>
+
+            {hasValidPurchase && redemptionPoints.trim() !== '' && (
+              <div className="space-y-2 rounded-lg bg-muted p-4 text-sm" aria-live="polite">
+                <div className="flex justify-between gap-4"><span className="text-muted-foreground">Points used</span><span className="font-medium">{usablePoints.toLocaleString()}</span></div>
+                <div className="flex justify-between gap-4"><span className="text-muted-foreground">Discount</span><span className="font-medium">{discountGel.toFixed(2)} GEL</span></div>
+                <div className="flex justify-between gap-4"><span className="text-muted-foreground">Discount percentage</span><span className="font-medium">{discountPercent.toFixed(2)}%</span></div>
+                <div className="flex justify-between gap-4 border-t pt-2"><span className="text-muted-foreground">Customer pays</span><span className="font-semibold">{amountToPay.toFixed(2)} GEL</span></div>
+                {requestedRedemptionPoints > usablePoints && (
+                  <p className="pt-1 text-xs text-muted-foreground">
+                    Points are limited by the user's available balance and cannot exceed the purchase total.
+                  </p>
+                )}
+              </div>
+            )}
+
+            <p className="text-xs text-muted-foreground">Preview only — this does not deduct points.</p>
+            <div className="flex justify-end">
+              <Button type="button" variant="outline" onClick={() => setDiscountOpen(false)}>Close</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
