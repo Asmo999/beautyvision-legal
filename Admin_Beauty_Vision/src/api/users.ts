@@ -43,6 +43,18 @@ export async function adjustBonus(id: string, points: number, description: strin
   return data;
 }
 
+export type PointsPreview = {
+  amountGel: number;
+  cashbackRate: number;
+  pointsEarned: number;
+  pointsValueGel: number;
+};
+
+export async function getPointsPreview(amountGel: number): Promise<PointsPreview> {
+  const { data } = await apiClient.get<PointsPreview>('/orders/points-preview', { params: { amountGel } });
+  return data;
+}
+
 export async function toggleVerification(id: string): Promise<{ user: AdminUser; isVerified: boolean }> {
   const { data } = await apiClient.patch(`/admin/users/${id}/verify`);
   return data;

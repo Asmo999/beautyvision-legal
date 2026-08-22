@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUser, adjustBonus, toggleVerification, changeRole } from '@/api/users';
+import { getUser, adjustBonus, toggleVerification, changeRole, getPointsPreview } from '@/api/users';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,19 +15,6 @@ import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Calculator, Plus } from 'lucide-react';
 
 const POINT_VALUE_GEL = 0.01;
-
-function getBonusRate(amountGel: number): number {
-  if (amountGel >= 1000) return 5;
-  if (amountGel >= 700) return 4;
-  if (amountGel >= 300) return 3;
-  if (amountGel >= 100) return 2;
-  return 0;
-}
-
-function calculateBonusPoints(amountGel: number): number {
-  const cashbackGel = amountGel * (getBonusRate(amountGel) / 100);
-  return Math.round(cashbackGel / POINT_VALUE_GEL);
-}
 
 export default function UserDetailPage() {
   const { id } = useParams();
@@ -50,6 +37,20 @@ export default function UserDetailPage() {
   const [discountOpen, setDiscountOpen] = useState(false);
   const [purchaseGel, setPurchaseGel] = useState('');
   const [redemptionPoints, setRedemptionPoints] = useState('');
+  const parsedOfflinePurchaseGel = Number(offlinePurchaseGel);
+  const hasValidOfflinePurchase = offlinePurchaseGel.trim() !== ''
+    && Number.isFinite(parsedOfflinePurchaseGel)
+    && parsedOfflinePurchaseGel > 0;
+
+  const {
+    data: offlinePointsPreview,
+    isFetching: offlinePreviewLoading,
+    isError: offlinePreviewError,
+  } = useQuery({
+    queryKey: ['points-preview', parsedOfflinePurchaseGel],
+    queryFn: () => getPointsPreview(parsedOfflinePurchaseGel),
+    enabled: hasValidOfflinePurchase,
+  });
 
   const bonusMut = useMutation({
     mutationFn: () => adjustBonus(id!, Number(bonusPoints), bonusDesc),
@@ -83,12 +84,8 @@ export default function UserDetailPage() {
     setBonusPoints(value.trim() !== '' && Number.isFinite(gel) ? String(Math.round(gel / POINT_VALUE_GEL)) : '');
   };
 
-  const parsedOfflinePurchaseGel = Number(offlinePurchaseGel);
-  const hasValidOfflinePurchase = offlinePurchaseGel.trim() !== ''
-    && Number.isFinite(parsedOfflinePurchaseGel)
-    && parsedOfflinePurchaseGel > 0;
-  const offlineBonusRate = hasValidOfflinePurchase ? getBonusRate(parsedOfflinePurchaseGel) : 0;
-  const offlineBonusPoints = hasValidOfflinePurchase ? calculateBonusPoints(parsedOfflinePurchaseGel) : 0;
+  const offlineBonusRate = offlinePointsPreview?.cashbackRate ?? 0;
+  const offlineBonusPoints = offlinePointsPreview?.pointsEarned ?? 0;
 
   const useOfflinePurchasePoints = () => {
     if (!hasValidOfflinePurchase || offlineBonusPoints <= 0) return;
@@ -228,7 +225,13 @@ export default function UserDetailPage() {
                   placeholder="e.g., 150.00"
                 />
               </div>
-              {hasValidOfflinePurchase && (
+              {hasValidOfflinePurchase && offlinePreviewLoading && !offlinePointsPreview && (
+                <div className="rounded-md bg-muted p-3 text-sm text-muted-foreground">Calculating points...</div>
+              )}
+              {hasValidOfflinePurchase && offlinePreviewError && (
+                <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">Could not calculate points. Please try again.</div>
+              )}
+              {hasValidOfflinePurchase && offlinePointsPreview && (
                 <div className="space-y-2 rounded-md bg-muted p-3 text-sm" aria-live="polite">
                   <div className="flex justify-between gap-4"><span className="text-muted-foreground">Earning rate</span><span className="font-medium">{offlineBonusRate}%</span></div>
                   <div className="flex justify-between gap-4"><span className="text-muted-foreground">Points earned</span><span className="font-medium">{offlineBonusPoints.toLocaleString()}</span></div>
