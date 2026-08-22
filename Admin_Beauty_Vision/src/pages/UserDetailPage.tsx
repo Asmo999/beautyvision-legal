@@ -25,7 +25,8 @@ function getBonusRate(amountGel: number): number {
 }
 
 function calculateBonusPoints(amountGel: number): number {
-  return Math.round(amountGel * (getBonusRate(amountGel) / 100));
+  const cashbackGel = amountGel * (getBonusRate(amountGel) / 100);
+  return Math.round(cashbackGel / POINT_VALUE_GEL);
 }
 
 export default function UserDetailPage() {
