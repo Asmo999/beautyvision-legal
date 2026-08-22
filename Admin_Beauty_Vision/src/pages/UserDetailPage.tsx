@@ -16,6 +16,18 @@ import { ArrowLeft, Calculator, Plus } from 'lucide-react';
 
 const POINT_VALUE_GEL = 0.01;
 
+function getBonusRate(amountGel: number): number {
+  if (amountGel >= 1000) return 5;
+  if (amountGel >= 700) return 4;
+  if (amountGel >= 300) return 3;
+  if (amountGel >= 100) return 2;
+  return 0;
+}
+
+function calculateBonusPoints(amountGel: number): number {
+  return Math.round(amountGel * (getBonusRate(amountGel) / 100));
+}
+
 export default function UserDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,13 +45,14 @@ export default function UserDetailPage() {
   const [bonusPoints, setBonusPoints] = useState('');
   const [bonusGel, setBonusGel] = useState('');
   const [bonusDesc, setBonusDesc] = useState('');
+  const [offlinePurchaseGel, setOfflinePurchaseGel] = useState('');
   const [discountOpen, setDiscountOpen] = useState(false);
   const [purchaseGel, setPurchaseGel] = useState('');
   const [redemptionPoints, setRedemptionPoints] = useState('');
 
   const bonusMut = useMutation({
     mutationFn: () => adjustBonus(id!, Number(bonusPoints), bonusDesc),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['user', id] }); setBonusOpen(false); setBonusPoints(''); setBonusGel(''); setBonusDesc(''); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['user', id] }); setBonusOpen(false); setBonusPoints(''); setBonusGel(''); setBonusDesc(''); setOfflinePurchaseGel(''); },
   });
 
   const verifyMut = useMutation({
@@ -67,6 +80,21 @@ export default function UserDetailPage() {
     setBonusGel(value);
     const gel = Number(value);
     setBonusPoints(value.trim() !== '' && Number.isFinite(gel) ? String(Math.round(gel / POINT_VALUE_GEL)) : '');
+  };
+
+  const parsedOfflinePurchaseGel = Number(offlinePurchaseGel);
+  const hasValidOfflinePurchase = offlinePurchaseGel.trim() !== ''
+    && Number.isFinite(parsedOfflinePurchaseGel)
+    && parsedOfflinePurchaseGel > 0;
+  const offlineBonusRate = hasValidOfflinePurchase ? getBonusRate(parsedOfflinePurchaseGel) : 0;
+  const offlineBonusPoints = hasValidOfflinePurchase ? calculateBonusPoints(parsedOfflinePurchaseGel) : 0;
+
+  const useOfflinePurchasePoints = () => {
+    if (!hasValidOfflinePurchase || offlineBonusPoints <= 0) return;
+    updateBonusPoints(String(offlineBonusPoints));
+    if (bonusDesc.trim() === '') {
+      setBonusDesc(`Offline store purchase — ${parsedOfflinePurchaseGel.toFixed(2)} GEL`);
+    }
   };
 
   const parsedPurchaseGel = Number(purchaseGel);
@@ -182,6 +210,39 @@ export default function UserDetailPage() {
         <DialogContent>
           <DialogHeader><DialogTitle>Adjust Bonus Points</DialogTitle></DialogHeader>
           <form onSubmit={(e) => { e.preventDefault(); bonusMut.mutate(); }} className="space-y-4">
+            <div className="space-y-3 rounded-lg border p-3">
+              <div>
+                <p className="text-sm font-medium">Calculate points from an offline purchase</p>
+                <p className="text-xs text-muted-foreground">Uses the same earning tiers as an in-app purchase.</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="offline-purchase-gel">Purchase amount (GEL)</Label>
+                <Input
+                  id="offline-purchase-gel"
+                  type="number"
+                  min="0.01"
+                  step="0.01"
+                  value={offlinePurchaseGel}
+                  onChange={(e) => setOfflinePurchaseGel(e.target.value)}
+                  placeholder="e.g., 150.00"
+                />
+              </div>
+              {hasValidOfflinePurchase && (
+                <div className="space-y-2 rounded-md bg-muted p-3 text-sm" aria-live="polite">
+                  <div className="flex justify-between gap-4"><span className="text-muted-foreground">Earning rate</span><span className="font-medium">{offlineBonusRate}%</span></div>
+                  <div className="flex justify-between gap-4"><span className="text-muted-foreground">Points earned</span><span className="font-medium">{offlineBonusPoints.toLocaleString()}</span></div>
+                  <div className="flex justify-between gap-4"><span className="text-muted-foreground">Points value</span><span className="font-medium">{(offlineBonusPoints * POINT_VALUE_GEL).toFixed(2)} GEL</span></div>
+                  {offlineBonusPoints > 0 ? (
+                    <Button type="button" size="sm" className="w-full" onClick={useOfflinePurchasePoints}>
+                      Use {offlineBonusPoints.toLocaleString()} calculated points
+                    </Button>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">Purchases below 100 GEL do not earn bonus points.</p>
+                  )}
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label>Points (positive to add, negative to deduct)</Label>
               <Input type="number" value={bonusPoints} onChange={(e) => updateBonusPoints(e.target.value)} required placeholder="e.g., 100 or -50" />
