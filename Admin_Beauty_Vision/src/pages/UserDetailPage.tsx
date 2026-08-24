@@ -57,6 +57,17 @@ export default function UserDetailPage() {
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['user', id] }); setBonusOpen(false); setBonusPoints(''); setBonusGel(''); setBonusDesc(''); setOfflinePurchaseGel(''); },
   });
 
+  const redemptionMut = useMutation({
+    mutationFn: ({ points, description }: { points: number; description: string }) =>
+      adjustBonus(id!, -points, description),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['user', id] });
+      setDiscountOpen(false);
+      setPurchaseGel('');
+      setRedemptionPoints('');
+    },
+  });
+
   const verifyMut = useMutation({
     mutationFn: () => toggleVerification(id!),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['user', id] }),
@@ -110,6 +121,14 @@ export default function UserDetailPage() {
   const useAvailablePoints = () => {
     if (!hasValidPurchase) return;
     setRedemptionPoints(String(Math.min(user.bonusPoints, maxPointsForPurchase)));
+  };
+
+  const redeemPoints = () => {
+    if (!hasValidPurchase || usablePoints <= 0 || redemptionMut.isPending) return;
+    redemptionMut.mutate({
+      points: usablePoints,
+      description: `Discount on ${parsedPurchaseGel.toFixed(2)} GEL purchase — ${discountGel.toFixed(2)} GEL`,
+    });
   };
 
   return (
@@ -328,9 +347,17 @@ export default function UserDetailPage() {
               </div>
             )}
 
-            <p className="text-xs text-muted-foreground">Preview only — this does not deduct points.</p>
-            <div className="flex justify-end">
-              <Button type="button" variant="outline" onClick={() => setDiscountOpen(false)}>Close</Button>
+            {redemptionMut.isError && (
+              <p className="text-xs text-destructive" role="alert">
+                Could not use the points. The customer's balance was not changed. Please try again.
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">Using points deducts them from the customer's balance.</p>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setDiscountOpen(false)} disabled={redemptionMut.isPending}>Close</Button>
+              <Button type="button" onClick={redeemPoints} disabled={!hasValidPurchase || usablePoints <= 0 || redemptionMut.isPending}>
+                {redemptionMut.isPending ? 'Using...' : `Use ${usablePoints.toLocaleString()} points`}
+              </Button>
             </div>
           </div>
         </DialogContent>
