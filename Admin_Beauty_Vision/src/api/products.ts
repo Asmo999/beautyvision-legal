@@ -9,6 +9,7 @@ interface ListParams {
   brand?: string;
   tag?: string;
   isActive?: boolean;
+  missingBalanceNomenclature?: boolean;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -18,6 +19,7 @@ interface ListResponse {
   total: number;
   page: number;
   totalPages: number;
+  missingBalanceNomenclatureCount: number;
 }
 
 export async function listProducts(params: ListParams = {}): Promise<ListResponse> {
