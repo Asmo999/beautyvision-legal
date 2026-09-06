@@ -260,7 +260,7 @@ export default function UserDetailPage() {
                       Use {offlineBonusPoints.toLocaleString()} calculated points
                     </Button>
                   ) : (
-                    <p className="text-xs text-muted-foreground">Purchases below 100 GEL do not earn bonus points.</p>
+                    <p className="text-xs text-muted-foreground">This purchase earns less than one bonus point after rounding.</p>
                   )}
                 </div>
               )}

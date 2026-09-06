@@ -30,9 +30,11 @@ interface FormState {
   ingredients: string; ingredientsKa: string;
   howToUse: string; howToUseKa: string;
   variants: VariantForm[]; tag: string; tagLabel: string; tagLabelKa: string;
+  variantType: 'size' | 'shade';
   inStock: boolean; isActive: boolean; isPopular: boolean; isNewArrival: boolean; icon: string;
   color1: string; color2: string;
   balanceNomenclatures: BalanceNomenclatureForm[];
+  balanceSyncEnabled: boolean;
 }
 
 interface VariantForm {
@@ -49,9 +51,11 @@ const emptyForm: FormState = {
   ingredients: '', ingredientsKa: '',
   howToUse: '', howToUseKa: '',
   variants: [], tag: '', tagLabel: '', tagLabelKa: '',
+  variantType: 'size',
   inStock: true, isActive: true, isPopular: false, isNewArrival: false, icon: 'circle',
   color1: '#000000', color2: '#333333',
   balanceNomenclatures: [],
+  balanceSyncEnabled: true,
 };
 
 function formatMoney(value: number): string {
@@ -153,6 +157,7 @@ export default function ProductEditPage() {
         howToUse: product.translations?.en?.howToUse ?? product.howToUse ?? '',
         howToUseKa: product.translations?.ka?.howToUse ?? '',
         variants,
+        variantType: product.variantType ?? 'size',
         tag: product.tag ?? '',
         tagLabel: product.translations?.en?.tagLabel ?? product.tagLabel ?? '',
         tagLabelKa: product.translations?.ka?.tagLabel ?? '',
@@ -164,6 +169,7 @@ export default function ProductEditPage() {
         color1: product.colors[0],
         color2: product.colors[1],
         balanceNomenclatures: product.balanceNomenclatures ?? [],
+        balanceSyncEnabled: product.balanceSyncEnabled !== false,
       });
       setImages(product.images);
     }
@@ -201,6 +207,8 @@ export default function ProductEditPage() {
         },
         sizes: variants.map((variant) => variant.size),
         variants,
+        variantType: form.variantType,
+        balanceSyncEnabled: form.balanceSyncEnabled,
         balanceNomenclatures: getBalanceRows(form)
           .map((entry) => ({
             size: entry.size,
@@ -347,10 +355,28 @@ export default function ProductEditPage() {
               </div>
             ) : null}
             <div className="space-y-3 sm:col-span-2">
+              <div className="space-y-2">
+                <Label>Variant Type</Label>
+                <Select value={form.variantType} onValueChange={(v) => set('variantType', v === 'shade' ? 'shade' : 'size')}>
+                  <SelectTrigger aria-label="Variant Type">
+                    <SelectValue>{form.variantType === 'shade' ? 'Shade code' : 'Size / Volume'}</SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="size">Size / Volume</SelectItem>
+                    <SelectItem value="shade">Shade code</SelectItem>
+                  </SelectContent>
+                </Select>
+                {form.variantType === 'shade' && (
+                  <p className="text-xs text-muted-foreground">
+                    Add codes such as 1-0 and 2-0 below. Customers choose a code under this product's shared photos.
+                    Each code can have its own price and Balance nomenclature ID.
+                  </p>
+                )}
+              </div>
               <div className="flex items-center justify-between gap-3">
-                <Label>Size Prices</Label>
+                <Label>{form.variantType === 'shade' ? 'Shade Codes & Prices' : 'Size Prices'}</Label>
                 <Button type="button" variant="outline" size="sm" onClick={addVariant}>
-                  <Plus className="mr-1 h-3.5 w-3.5" />Add Size
+                  <Plus className="mr-1 h-3.5 w-3.5" />{form.variantType === 'shade' ? 'Add Code' : 'Add Size'}
                 </Button>
               </div>
               {form.variants.length > 0 ? (
@@ -371,7 +397,12 @@ export default function ProductEditPage() {
                           />
                           Default
                         </label>
-                        <Input value={variant.size} onChange={(e) => setVariant(index, 'size', e.target.value)} placeholder="15 ml" />
+                        <Input
+                          value={variant.size}
+                          onChange={(e) => setVariant(index, 'size', e.target.value)}
+                          placeholder={form.variantType === 'shade' ? '1-0' : '15 ml'}
+                          aria-label={`${form.variantType === 'shade' ? 'Shade code' : 'Size'} ${index + 1}`}
+                        />
                         <Input type="number" step="0.01" value={variant.price} onChange={(e) => setVariant(index, 'price', e.target.value)} placeholder="Current" />
                         <Input type="number" step="0.01" value={variant.oldPrice} onChange={(e) => setVariant(index, 'oldPrice', e.target.value)} placeholder="Old higher" />
                         <div className={`flex items-center text-xs ${oldPrice && oldPrice <= price ? 'text-destructive' : 'text-muted-foreground'}`}>
@@ -386,14 +417,14 @@ export default function ProductEditPage() {
                 </div>
               ) : null}
             </div>
-            <div className="flex items-center gap-4 sm:col-span-2">
+            <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.inStock} onChange={(e) => set('inStock', e.target.checked)} className="rounded" />
                 In Stock
               </label>
               <label className="flex items-center gap-2 text-sm">
-                <input type="checkbox" checked={form.isActive} onChange={(e) => set('isActive', e.target.checked)} className="rounded" />
-                Active
+                <input type="checkbox" checked={form.isActive} onChange={(e) => set('isActive', e.target.checked)} aria-describedby="product-visibility-description" className="rounded" />
+                Visible to customers
               </label>
               <label className="flex items-center gap-2 text-sm">
                 <input type="checkbox" checked={form.isPopular} onChange={(e) => set('isPopular', e.target.checked)} className="rounded" />
@@ -404,12 +435,31 @@ export default function ProductEditPage() {
                 New Arrival
               </label>
             </div>
+            <p id="product-visibility-description" className="text-xs text-muted-foreground sm:col-span-2">
+              Turn off Visible to customers to hide this product temporarily. Its details and images stay saved, and you can show it again at any time.
+            </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">1C / Balance Nomenclature</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">1C / Balance</CardTitle></CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={form.balanceSyncEnabled}
+                  onChange={(e) => set('balanceSyncEnabled', e.target.checked)}
+                  aria-describedby="balance-sync-description"
+                  className="rounded"
+                />
+                Sync with Balance
+              </label>
+              <p id="balance-sync-description" className="text-xs text-muted-foreground">
+                When off, this product uses the In Stock setting. Its sales from new orders are not sent to Balance.
+                Saved nomenclature IDs are kept for when you turn sync back on.
+              </p>
+            </div>
             {balanceRows.map((row) => (
               <div key={row.size ?? 'default'} className="grid gap-2 sm:grid-cols-[160px_minmax(0,1fr)] sm:items-center">
                 <Label>{row.size ?? 'Default item'}</Label>
@@ -417,6 +467,7 @@ export default function ProductEditPage() {
                   value={row.nomenclatureId}
                   onChange={(e) => setBalanceNomenclature(row.size, e.target.value)}
                   placeholder="Balance nomenclature UUID"
+                  disabled={!form.balanceSyncEnabled}
                 />
               </div>
             ))}

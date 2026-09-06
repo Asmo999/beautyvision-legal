@@ -70,6 +70,7 @@ export interface Product {
   howToUse: string | null;
   translations?: TranslationBundle<'name' | 'description' | 'ingredients' | 'howToUse' | 'tagLabel'>;
   sizes: string[];
+  variantType: 'size' | 'shade';
   variants: {
     size: string;
     price: number;
@@ -77,6 +78,7 @@ export interface Product {
     isDefault?: boolean;
   }[];
   balanceNomenclatures: { size: string | null; nomenclatureId: string }[];
+  balanceSyncEnabled: boolean;
   images: string[];
   tag: 'best' | 'new' | 'sale' | null;
   tagLabel: string | null;

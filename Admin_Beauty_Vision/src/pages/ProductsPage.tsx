@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { listProducts, deleteProduct } from '@/api/products';
+import { listProducts, updateProduct } from '@/api/products';
 import { listCategories } from '@/api/categories';
 import { listBrands } from '@/api/brands';
 import type { Product, Brand, Category } from '@/types';
@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Plus, Pencil, Trash2, Search, ImageOff } from 'lucide-react';
+import { Plus, Pencil, Eye, EyeOff, Search, ImageOff } from 'lucide-react';
 import { mediaUrl } from '@/lib/urls';
 
 function formatMoney(value: number): string {
@@ -39,18 +39,29 @@ export default function ProductsPage() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('');
   const [brandFilter, setBrandFilter] = useState('');
+  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'visible' | 'hidden'>('all');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['products', page, search, categoryFilter, brandFilter],
-    queryFn: () => listProducts({ page, limit: 20, search: search || undefined, category: categoryFilter || undefined, brand: brandFilter || undefined }),
+    queryKey: ['products', page, search, categoryFilter, brandFilter, visibilityFilter],
+    queryFn: () => listProducts({
+      page, limit: 20, search: search || undefined,
+      category: categoryFilter || undefined, brand: brandFilter || undefined,
+      isActive: visibilityFilter === 'all' ? undefined : visibilityFilter === 'visible',
+    }),
   });
 
   const { data: categories = [] } = useQuery({ queryKey: ['categories'], queryFn: listCategories });
   const { data: brands = [] } = useQuery({ queryKey: ['brands'], queryFn: listBrands });
 
-  const deleteMut = useMutation({
-    mutationFn: (id: string) => deleteProduct(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }),
+  const visibilityMut = useMutation({
+    mutationFn: ({ id, isActive }: { id: string; isActive: boolean }) => updateProduct(id, { isActive }),
+    onSuccess: (product) => {
+      qc.setQueryData(['product', product._id], product);
+      if (visibilityFilter !== 'all' && data?.products.length === 1) {
+        setPage((current) => Math.max(1, current - 1));
+      }
+      return qc.invalidateQueries({ queryKey: ['products'] });
+    },
   });
 
   const getBrandName = (p: Product) => typeof p.brand === 'string' ? p.brand : (p.brand as Brand).name;
@@ -62,6 +73,16 @@ export default function ProductsPage() {
         <h1 className="text-2xl font-bold tracking-tight">Products</h1>
         <Button onClick={() => navigate('/products/new')} size="sm"><Plus className="mr-1 h-4 w-4" />Add Product</Button>
       </div>
+
+      <p className="mb-4 text-sm text-muted-foreground">
+        Hide products temporarily to remove them from the customer catalog. Their details and images are kept so you can show them again.
+      </p>
+
+      {visibilityMut.isError && (
+        <p role="alert" className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          Could not change product visibility. Please try again.
+        </p>
+      )}
 
       <div className="mb-4 flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
@@ -82,6 +103,16 @@ export default function ProductsPage() {
             {brands.map((b) => <SelectItem key={b._id} value={b._id}>{b.name}</SelectItem>)}
           </SelectContent>
         </Select>
+        <Select value={visibilityFilter} onValueChange={(v) => { setVisibilityFilter(v === 'visible' || v === 'hidden' ? v : 'all'); setPage(1); }}>
+          <SelectTrigger className="w-40" aria-label="Product visibility">
+            <SelectValue>{visibilityFilter === 'all' ? 'All Visibility' : visibilityFilter === 'visible' ? 'Visible' : 'Hidden'}</SelectValue>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Visibility</SelectItem>
+            <SelectItem value="visible">Visible</SelectItem>
+            <SelectItem value="hidden">Hidden</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-md border">
@@ -95,16 +126,17 @@ export default function ProductsPage() {
               <TableHead>Price</TableHead>
               <TableHead>Tag</TableHead>
               <TableHead>Stock</TableHead>
-              <TableHead className="w-24">Actions</TableHead>
+              <TableHead>Visibility</TableHead>
+              <TableHead className="w-36">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">Loading...</TableCell></TableRow>
             ) : !data?.products.length ? (
-              <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground">No products found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground">No products found</TableCell></TableRow>
             ) : data.products.map((p) => (
-              <TableRow key={p._id} className={!p.isActive ? 'opacity-50' : ''}>
+              <TableRow key={p._id} className={!p.isActive ? 'bg-muted/30' : ''}>
                 <TableCell>
                   {p.images?.[0] ? (
                     <img src={mediaUrl(p.images[0])} alt={p.name} className="h-10 w-10 rounded-md object-cover" />
@@ -131,10 +163,20 @@ export default function ProductsPage() {
                 </TableCell>
                 <TableCell>{p.tag ? <Badge variant="outline">{p.tagLabel || p.tag}</Badge> : '-'}</TableCell>
                 <TableCell><Badge variant={p.inStock ? 'default' : 'destructive'}>{p.inStock ? 'In Stock' : 'Out'}</Badge></TableCell>
+                <TableCell><Badge variant={p.isActive ? 'outline' : 'secondary'}>{p.isActive ? 'Visible' : 'Hidden'}</Badge></TableCell>
                 <TableCell>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => navigate(`/products/${p._id}`)}><Pencil className="h-3.5 w-3.5" /></Button>
-                    <Button variant="ghost" size="icon" onClick={() => { if (confirm('Deactivate this product?')) deleteMut.mutate(p._id); }}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="icon" aria-label={`Edit ${p.name}`} onClick={() => navigate(`/products/${p._id}`)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={visibilityMut.isPending}
+                      aria-label={`${p.isActive ? 'Hide' : 'Show'} ${p.name}`}
+                      onClick={() => visibilityMut.mutate({ id: p._id, isActive: !p.isActive })}
+                    >
+                      {p.isActive ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      {visibilityMut.isPending && visibilityMut.variables.id === p._id ? 'Saving...' : p.isActive ? 'Hide' : 'Show'}
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
