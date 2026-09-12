@@ -216,7 +216,7 @@ export default function SettingsPage() {
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Charged once the user's free-delivery window ends. Set to 0 to keep delivery free for everyone.
+                Charged on every order that does not earn free delivery. Set to 0 to keep delivery free for everyone.
               </p>
             </div>
             <div>
@@ -234,7 +234,7 @@ export default function SettingsPage() {
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Every new account gets this many days of free delivery after registering. 90 = roughly 3 months.
+                How long after registering an account can still earn free delivery — the order must also clear the threshold below. 90 = roughly 3 months. Set to 0 to switch free delivery off for everyone.
               </p>
             </div>
             <div>
@@ -250,7 +250,7 @@ export default function SettingsPage() {
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Orders at or above this subtotal qualify for free delivery. Set to 0 to disable the threshold.
+                Delivery is free only when the order is at or above this subtotal AND the buyer is still inside their sign-up window. Set to 0 to require no minimum (sign-up window alone).
               </p>
             </div>
           </div>
@@ -274,7 +274,7 @@ export default function SettingsPage() {
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Free delivery threshold</dt>
-                <dd className="font-medium">{settings.freeDeliveryThreshold > 0 ? `₾ ${settings.freeDeliveryThreshold.toFixed(2)}` : 'Disabled'}</dd>
+                <dd className="font-medium">{settings.freeDeliveryThreshold > 0 ? `₾ ${settings.freeDeliveryThreshold.toFixed(2)}` : 'No minimum'}</dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">SMS recipients</dt>
