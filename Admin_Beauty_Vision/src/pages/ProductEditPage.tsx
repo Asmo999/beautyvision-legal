@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getProduct, createProduct, updateProduct } from '@/api/products';
 import { listCategories } from '@/api/categories';
@@ -109,7 +109,11 @@ export default function ProductEditPage() {
   const { id } = useParams();
   const isNew = !id || id === 'new';
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
+  const returnTo = typeof location.state?.returnTo === 'string' && location.state.returnTo.startsWith('/products')
+    ? location.state.returnTo
+    : '/products';
 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [images, setImages] = useState<string[]>([]);
@@ -233,9 +237,9 @@ export default function ProductEditPage() {
       if (id) qc.setQueryData(['product', id], product);
 
       if (mode === 'close') {
-        navigate('/products');
+        navigate(returnTo);
       } else if (isNew) {
-        navigate(`/products/${product._id}`, { replace: true });
+        navigate(`/products/${product._id}`, { replace: true, state: { returnTo } });
       }
     },
     onError: (err: unknown) => {
@@ -289,7 +293,7 @@ export default function ProductEditPage() {
 
   return (
     <div className="max-w-3xl">
-      <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate('/products')}>
+      <Button variant="ghost" size="sm" className="mb-4" onClick={() => navigate(returnTo)}>
         <ArrowLeft className="mr-1 h-4 w-4" />Back to Products
       </Button>
 
@@ -561,7 +565,7 @@ export default function ProductEditPage() {
         </Card>
 
         <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={() => navigate('/products')}>Cancel</Button>
+          <Button type="button" variant="outline" onClick={() => navigate(returnTo)}>Cancel</Button>
           <Button type="submit" disabled={saveMutation.isPending} onClick={() => { saveModeRef.current = 'stay'; }}>
             {saveMutation.isPending ? 'Saving...' : 'Save Product'}
           </Button>

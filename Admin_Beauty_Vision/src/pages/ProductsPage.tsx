@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { listProducts, updateProduct } from '@/api/products';
 import { listCategories } from '@/api/categories';
 import { listBrands } from '@/api/brands';
@@ -32,14 +31,39 @@ function getPriceSummary(product: Product): { price: string; oldPrice: string | 
   };
 }
 
+function getPage(value: string | null): number {
+  const page = Number(value);
+  return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
 export default function ProductsPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const qc = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState('');
-  const [brandFilter, setBrandFilter] = useState('');
-  const [visibilityFilter, setVisibilityFilter] = useState<'all' | 'visible' | 'hidden'>('all');
+  const page = getPage(searchParams.get('page'));
+  const search = searchParams.get('search') ?? '';
+  const categoryFilter = searchParams.get('category') ?? '';
+  const brandFilter = searchParams.get('brand') ?? '';
+  const visibilityParam = searchParams.get('visibility');
+  const visibilityFilter: 'all' | 'visible' | 'hidden' =
+    visibilityParam === 'visible' || visibilityParam === 'hidden' ? visibilityParam : 'all';
+  const listUrl = `${location.pathname}${location.search}`;
+
+  const setListParam = (key: string, value: string, resetPage = false) => {
+    setSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      if (value) next.set(key, value);
+      else next.delete(key);
+      if (resetPage) next.delete('page');
+      return next;
+    }, { replace: resetPage });
+  };
+
+  const setPage = (nextPage: number | ((current: number) => number)) => {
+    const value = typeof nextPage === 'function' ? nextPage(page) : nextPage;
+    setListParam('page', value > 1 ? String(value) : '');
+  };
 
   const { data, isLoading } = useQuery({
     queryKey: ['products', page, search, categoryFilter, brandFilter, visibilityFilter],
@@ -71,7 +95,7 @@ export default function ProductsPage() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">Products</h1>
-        <Button onClick={() => navigate('/products/new')} size="sm"><Plus className="mr-1 h-4 w-4" />Add Product</Button>
+        <Button onClick={() => navigate('/products/new', { state: { returnTo: listUrl } })} size="sm"><Plus className="mr-1 h-4 w-4" />Add Product</Button>
       </div>
 
       <p className="mb-4 text-sm text-muted-foreground">
@@ -87,23 +111,23 @@ export default function ProductsPage() {
       <div className="mb-4 flex flex-wrap gap-2">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search products..." className="pl-8" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+          <Input placeholder="Search products..." className="pl-8" value={search} onChange={(e) => setListParam('search', e.target.value, true)} />
         </div>
-        <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v === 'all' ? '' : v ?? ''); setPage(1); }}>
+        <Select value={categoryFilter} onValueChange={(v) => setListParam('category', v === 'all' ? '' : v ?? '', true)}>
           <SelectTrigger className="w-40"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
             {categories.map((c) => <SelectItem key={c._id} value={c._id}>{c.name}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={brandFilter} onValueChange={(v) => { setBrandFilter(v === 'all' ? '' : v ?? ''); setPage(1); }}>
+        <Select value={brandFilter} onValueChange={(v) => setListParam('brand', v === 'all' ? '' : v ?? '', true)}>
           <SelectTrigger className="w-40"><SelectValue placeholder="Brand" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Brands</SelectItem>
             {brands.map((b) => <SelectItem key={b._id} value={b._id}>{b.name}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={visibilityFilter} onValueChange={(v) => { setVisibilityFilter(v === 'visible' || v === 'hidden' ? v : 'all'); setPage(1); }}>
+        <Select value={visibilityFilter} onValueChange={(v) => setListParam('visibility', v === 'visible' || v === 'hidden' ? v : '', true)}>
           <SelectTrigger className="w-40" aria-label="Product visibility">
             <SelectValue>{visibilityFilter === 'all' ? 'All Visibility' : visibilityFilter === 'visible' ? 'Visible' : 'Hidden'}</SelectValue>
           </SelectTrigger>
@@ -166,7 +190,7 @@ export default function ProductsPage() {
                 <TableCell><Badge variant={p.isActive ? 'outline' : 'secondary'}>{p.isActive ? 'Visible' : 'Hidden'}</Badge></TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" aria-label={`Edit ${p.name}`} onClick={() => navigate(`/products/${p._id}`)}><Pencil className="h-3.5 w-3.5" /></Button>
+                    <Button variant="ghost" size="icon" aria-label={`Edit ${p.name}`} onClick={() => navigate(`/products/${p._id}`, { state: { returnTo: listUrl } })}><Pencil className="h-3.5 w-3.5" /></Button>
                     <Button
                       variant="outline"
                       size="sm"
