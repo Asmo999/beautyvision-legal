@@ -106,7 +106,9 @@ export default function OrderDetailPage() {
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">Delivery time</span>
               <span className="text-right">
-                {order.deliveryMode === 'scheduled' && order.scheduledDeliveryAt
+                {order.deliveryMode === 'regional'
+                  ? 'Regions · approximately 2–3 days'
+                  : order.deliveryMode === 'scheduled' && order.scheduledDeliveryAt
                   ? new Date(order.scheduledDeliveryAt).toLocaleString()
                   : 'ASAP'}
               </span>
