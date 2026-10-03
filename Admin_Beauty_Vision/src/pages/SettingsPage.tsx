@@ -37,7 +37,8 @@ export default function SettingsPage() {
   const { data: loyaltyStatus } = useQuery({ queryKey: ['loyalty-reset-status'], queryFn: getLoyaltyResetStatus });
 
   const [deliveryFee, setDeliveryFee] = useState<string>('');
-  const [freeDeliveryDays, setFreeDeliveryDays] = useState<string>('');
+  const [expressDeliveryFee, setExpressDeliveryFee] = useState<string>('');
+  const [freeDeliveryMonths, setFreeDeliveryMonths] = useState<string>('');
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<string>('');
   const [minIosVersion, setMinIosVersion] = useState<string>('');
   const [minAndroidVersion, setMinAndroidVersion] = useState<string>('');
@@ -56,7 +57,8 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!settings) return;
     setDeliveryFee(String(settings.deliveryFee));
-    setFreeDeliveryDays(String(settings.freeDeliveryDays));
+    setExpressDeliveryFee(settings.expressDeliveryFee == null ? '' : String(settings.expressDeliveryFee));
+    setFreeDeliveryMonths(settings.freeDeliveryMonths == null ? '' : String(settings.freeDeliveryMonths));
     setFreeDeliveryThreshold(String(settings.freeDeliveryThreshold));
     setMinIosVersion(settings.minIosVersion ?? '');
     setMinAndroidVersion(settings.minAndroidVersion ?? '');
@@ -119,16 +121,20 @@ export default function SettingsPage() {
     mutationFn: () => {
       setError(null);
       const fee = Number(deliveryFee);
-      const days = Number(freeDeliveryDays);
+      const expressFee = Number(expressDeliveryFee);
+      const months = Number(freeDeliveryMonths);
       const threshold = Number(freeDeliveryThreshold);
 
-      if (!Number.isFinite(fee) || fee < 0) {
+      if (deliveryFee.trim() === '' || !Number.isFinite(fee) || fee < 0) {
         throw new Error('Delivery fee must be a non-negative number');
       }
-      if (!Number.isInteger(days) || days < 0) {
-        throw new Error('Free delivery days must be a non-negative integer');
+      if (expressDeliveryFee.trim() === '' || !Number.isFinite(expressFee) || expressFee < 0) {
+        throw new Error('Express delivery fee must be a non-negative number');
       }
-      if (!Number.isFinite(threshold) || threshold < 0) {
+      if (freeDeliveryMonths.trim() === '' || !Number.isInteger(months) || months < 0) {
+        throw new Error('Free delivery months must be a non-negative integer');
+      }
+      if (freeDeliveryThreshold.trim() === '' || !Number.isFinite(threshold) || threshold < 0) {
         throw new Error('Free delivery threshold must be a non-negative number');
       }
 
@@ -155,7 +161,8 @@ export default function SettingsPage() {
 
       return updateSettings({
         deliveryFee: fee,
-        freeDeliveryDays: days,
+        expressDeliveryFee: expressFee,
+        freeDeliveryMonths: months,
         freeDeliveryThreshold: threshold,
         orderNotificationRecipients: recipients,
         minIosVersion: ios,
@@ -204,7 +211,7 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="deliveryFee">Delivery fee (GEL)</Label>
+              <Label htmlFor="deliveryFee">Standard delivery fee (GEL)</Label>
               <Input
                 id="deliveryFee"
                 type="number"
@@ -216,25 +223,41 @@ export default function SettingsPage() {
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Charged on every order that does not earn free delivery. Set to 0 to keep delivery free for everyone.
+                Charged for standard Tbilisi and regional delivery when the free delivery offer does not apply.
               </p>
             </div>
             <div>
-              <Label htmlFor="freeDeliveryDays" className="flex items-center gap-1.5">
-                <Gift className="h-3.5 w-3.5" /> Free delivery (days from sign-up)
+              <Label htmlFor="expressDeliveryFee">Tbilisi express delivery fee (GEL)</Label>
+              <Input
+                id="expressDeliveryFee"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={expressDeliveryFee}
+                onChange={(e) => setExpressDeliveryFee(e.target.value)}
+                disabled={isLoading || mutation.isPending}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Charged for express delivery in Tbilisi. The free standard delivery offer does not apply.
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="freeDeliveryMonths" className="flex items-center gap-1.5">
+                <Gift className="h-3.5 w-3.5" /> Free standard delivery (calendar months from sign-up)
               </Label>
               <Input
-                id="freeDeliveryDays"
+                id="freeDeliveryMonths"
                 type="number"
                 inputMode="numeric"
                 step="1"
                 min="0"
-                value={freeDeliveryDays}
-                onChange={(e) => setFreeDeliveryDays(e.target.value)}
+                value={freeDeliveryMonths}
+                onChange={(e) => setFreeDeliveryMonths(e.target.value)}
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                How long after registering an account can still earn free delivery — the order must also clear the threshold below. 90 = roughly 3 months. Set to 0 to switch free delivery off for everyone.
+                The order must also clear the threshold below. Set to 0 to switch the offer off.
               </p>
             </div>
             <div>
@@ -250,7 +273,7 @@ export default function SettingsPage() {
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Delivery is free only when the order is at or above this subtotal AND the buyer is still inside their sign-up window. Set to 0 to require no minimum (sign-up window alone).
+                Standard delivery is free only when the order is at or above this subtotal and the buyer is still inside their sign-up window. Set to 0 to require no minimum.
               </p>
             </div>
           </div>
@@ -265,12 +288,16 @@ export default function SettingsPage() {
           ) : settings ? (
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-muted-foreground">Current delivery fee</dt>
+                <dt className="text-muted-foreground">Standard delivery fee</dt>
                 <dd className="font-medium">₾ {settings.deliveryFee.toFixed(2)}</dd>
               </div>
               <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Tbilisi express fee</dt>
+                <dd className="font-medium">{settings.expressDeliveryFee == null ? 'Requires API update' : `₾ ${settings.expressDeliveryFee.toFixed(2)}`}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Free delivery window</dt>
-                <dd className="font-medium">{settings.freeDeliveryDays} days</dd>
+                <dd className="font-medium">{settings.freeDeliveryMonths == null ? 'Requires API update' : `${settings.freeDeliveryMonths} calendar months`}</dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Free delivery threshold</dt>

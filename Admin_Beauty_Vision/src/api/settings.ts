@@ -13,7 +13,8 @@ export interface LoyaltyDiscountConfig {
 
 export interface AdminSettings {
   deliveryFee: number;
-  freeDeliveryDays: number;
+  expressDeliveryFee: number;
+  freeDeliveryMonths: number;
   freeDeliveryThreshold: number;
   orderNotificationRecipients: string[];
   minIosVersion: string;
