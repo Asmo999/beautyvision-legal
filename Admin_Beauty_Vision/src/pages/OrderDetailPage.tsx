@@ -107,10 +107,12 @@ export default function OrderDetailPage() {
               <span className="text-muted-foreground">Delivery time</span>
               <span className="text-right">
                 {order.deliveryMode === 'regional'
-                  ? 'Regions · approximately 2–3 days'
+                  ? 'Regions · approximately 2–3 business days'
+                  : order.deliveryMode === 'standard'
+                  ? 'Tbilisi · 1–2 business days'
                   : order.deliveryMode === 'scheduled' && order.scheduledDeliveryAt
                   ? new Date(order.scheduledDeliveryAt).toLocaleString()
-                  : 'ASAP'}
+                  : 'Tbilisi express · as soon as possible'}
               </span>
             </div>
             <div className="flex justify-between font-bold"><span>Total</span><span>{order.total} GEL</span></div>

@@ -152,7 +152,7 @@ export interface Order {
   items: OrderItem[];
   subtotal: number;
   deliveryFee: number;
-  deliveryMode: 'asap' | 'scheduled' | 'regional';
+  deliveryMode: 'standard' | 'asap' | 'scheduled' | 'regional';
   deliveryRegion?: 'tbilisi' | 'region' | null;
   scheduledDeliveryAt: string | null;
   total: number;
