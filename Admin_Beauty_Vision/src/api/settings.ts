@@ -13,6 +13,7 @@ export interface LoyaltyDiscountConfig {
 
 export interface AdminSettings {
   deliveryFee: number;
+  regionalDeliveryFee: number;
   expressDeliveryFee: number;
   freeDeliveryMonths: number;
   freeDeliveryThreshold: number;
