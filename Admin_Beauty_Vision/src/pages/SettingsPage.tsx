@@ -37,6 +37,7 @@ export default function SettingsPage() {
   const { data: loyaltyStatus } = useQuery({ queryKey: ['loyalty-reset-status'], queryFn: getLoyaltyResetStatus });
 
   const [deliveryFee, setDeliveryFee] = useState<string>('');
+  const [regionalDeliveryFee, setRegionalDeliveryFee] = useState<string>('');
   const [expressDeliveryFee, setExpressDeliveryFee] = useState<string>('');
   const [freeDeliveryMonths, setFreeDeliveryMonths] = useState<string>('');
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<string>('');
@@ -57,6 +58,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!settings) return;
     setDeliveryFee(String(settings.deliveryFee));
+    setRegionalDeliveryFee(settings.regionalDeliveryFee == null ? '' : String(settings.regionalDeliveryFee));
     setExpressDeliveryFee(settings.expressDeliveryFee == null ? '' : String(settings.expressDeliveryFee));
     setFreeDeliveryMonths(settings.freeDeliveryMonths == null ? '' : String(settings.freeDeliveryMonths));
     setFreeDeliveryThreshold(String(settings.freeDeliveryThreshold));
@@ -121,12 +123,16 @@ export default function SettingsPage() {
     mutationFn: () => {
       setError(null);
       const fee = Number(deliveryFee);
+      const regionalFee = Number(regionalDeliveryFee);
       const expressFee = Number(expressDeliveryFee);
       const months = Number(freeDeliveryMonths);
       const threshold = Number(freeDeliveryThreshold);
 
       if (deliveryFee.trim() === '' || !Number.isFinite(fee) || fee < 0) {
         throw new Error('Delivery fee must be a non-negative number');
+      }
+      if (regionalDeliveryFee.trim() === '' || !Number.isFinite(regionalFee) || regionalFee < 0) {
+        throw new Error('Regional delivery fee must be a non-negative number');
       }
       if (expressDeliveryFee.trim() === '' || !Number.isFinite(expressFee) || expressFee < 0) {
         throw new Error('Express delivery fee must be a non-negative number');
@@ -161,6 +167,7 @@ export default function SettingsPage() {
 
       return updateSettings({
         deliveryFee: fee,
+        regionalDeliveryFee: regionalFee,
         expressDeliveryFee: expressFee,
         freeDeliveryMonths: months,
         freeDeliveryThreshold: threshold,
@@ -211,7 +218,7 @@ export default function SettingsPage() {
           </div>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="deliveryFee">Standard delivery fee (GEL)</Label>
+              <Label htmlFor="deliveryFee">Tbilisi standard delivery fee (GEL)</Label>
               <Input
                 id="deliveryFee"
                 type="number"
@@ -223,7 +230,23 @@ export default function SettingsPage() {
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                Charged for standard Tbilisi and regional delivery when the free delivery offer does not apply.
+                Charged for standard and scheduled delivery in Tbilisi when the free delivery offer does not apply.
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="regionalDeliveryFee">Regional delivery fee (GEL)</Label>
+              <Input
+                id="regionalDeliveryFee"
+                type="number"
+                inputMode="decimal"
+                step="0.01"
+                min="0"
+                value={regionalDeliveryFee}
+                onChange={(e) => setRegionalDeliveryFee(e.target.value)}
+                disabled={isLoading || mutation.isPending}
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Charged for delivery outside Tbilisi when the free delivery offer does not apply.
               </p>
             </div>
             <div>
@@ -257,7 +280,7 @@ export default function SettingsPage() {
                 disabled={isLoading || mutation.isPending}
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                The order must also clear the threshold below. Set to 0 to switch the offer off.
+                Applies to Tbilisi standard/scheduled and regional delivery. The order must also clear the threshold below. Set to 0 to switch the offer off.
               </p>
             </div>
             <div>
@@ -288,8 +311,12 @@ export default function SettingsPage() {
           ) : settings ? (
             <dl className="space-y-3 text-sm">
               <div className="flex justify-between gap-4">
-                <dt className="text-muted-foreground">Standard delivery fee</dt>
+                <dt className="text-muted-foreground">Tbilisi standard fee</dt>
                 <dd className="font-medium">₾ {settings.deliveryFee.toFixed(2)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted-foreground">Regional delivery fee</dt>
+                <dd className="font-medium">{settings.regionalDeliveryFee == null ? 'Requires API update' : `₾ ${settings.regionalDeliveryFee.toFixed(2)}`}</dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-muted-foreground">Tbilisi express fee</dt>
